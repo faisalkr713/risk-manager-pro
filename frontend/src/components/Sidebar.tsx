@@ -7,14 +7,16 @@ interface SidebarProps {
   onNavigate: (screen: Screen) => void;
   collapsed: boolean;
   onToggle: () => void;
+  user: { name: string; email: string };
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ active, onNavigate, collapsed, onToggle }) => (
+const Sidebar: React.FC<SidebarProps> = ({ active, onNavigate, collapsed, onToggle, user, onLogout }) => (
   <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
     <div className="sidebar-header" style={{ justifyContent: collapsed ? 'center' : 'space-between' }}>
       {!collapsed && (
         <div className="sidebar-logo">
-          <span style={{ fontSize: 18 }}>📊</span>
+          <span style={{ fontSize: 18 }}>⬡</span>
           <span>Risk Manager Pro</span>
         </div>
       )}
@@ -41,8 +43,20 @@ const Sidebar: React.FC<SidebarProps> = ({ active, onNavigate, collapsed, onTogg
       })}
     </nav>
 
-    <div className="sidebar-footer">
-      {!collapsed && 'v1.0.0 • Risk Manager Pro'}
+    {/* User profile + logout */}
+    <div className="sidebar-profile">
+      {!collapsed ? (
+        <div className="sp-row">
+          <div className="sp-avatar">{(user.name || user.email)[0].toUpperCase()}</div>
+          <div className="sp-info">
+            <div className="sp-name">{user.name || 'Trader'}</div>
+            <div className="sp-email">{user.email}</div>
+          </div>
+          <button className="sp-logout" onClick={onLogout} title="Sign out">⏻</button>
+        </div>
+      ) : (
+        <button className="sp-logout sp-logout-collapsed" onClick={onLogout} title="Sign out">⏻</button>
+      )}
     </div>
   </aside>
 );

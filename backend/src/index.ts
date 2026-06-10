@@ -6,6 +6,7 @@ import settingsRouter from './routes/settings';
 import assetsRouter from './routes/assets';
 import brokersRouter from './routes/brokers';
 import pricesRouter from './routes/prices';
+import authRouter from './routes/auth';
 import { startPriceService } from './services/priceService';
 
 const app = express();
@@ -15,6 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 app.use(cors({ origin: isProd ? true : 'http://localhost:5173' }));
 app.use(express.json());
 
+app.use('/api/auth', authRouter);
 app.use('/api/trades', tradesRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/assets', assetsRouter);
