@@ -38,6 +38,8 @@ if (isProd) {
 }
 
 async function start() {
+  console.log(`NODE_ENV=${process.env.NODE_ENV}, PORT=${PORT}`);
+  console.log(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
   await initDb();
   startPriceService();
   app.listen(PORT, () => {
@@ -46,7 +48,7 @@ async function start() {
 }
 
 start().catch(err => {
-  console.error('Failed to start server:', err);
+  console.error('Failed to start server:', err.message ?? err);
   process.exit(1);
 });
 

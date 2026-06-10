@@ -1,8 +1,13 @@
 import { Pool } from 'pg';
 
+const dbUrl = process.env.DATABASE_URL ?? '';
+// Render internal connections use hostname like dpg-xxx (no domain) — no SSL needed.
+// External/custom postgres URLs with a real domain do need SSL.
+const needsSsl = dbUrl.includes('.render.com') || (!dbUrl.includes('localhost') && dbUrl.includes('.'));
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionString: dbUrl,
+  ssl: needsSsl ? { rejectUnauthorized: false } : false,
 });
 
 export async function initDb(): Promise<void> {
