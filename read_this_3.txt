@@ -1,0 +1,303 @@
+DASHBOARD REDESIGN REQUIRED
+
+The current dashboard is functional but visually unprofessional.
+
+It looks like an admin panel instead of a professional trading terminal.
+
+The dashboard needs a complete redesign.
+
+DO NOT CHANGE THE APP LOGIC.
+
+ONLY IMPROVE THE USER EXPERIENCE, DATA VISUALIZATION, AND LAYOUT.
+
+=================================
+DESIGN GOAL
+===========
+
+I want the dashboard to feel similar to:
+
+TradingView
+
+Bloomberg Terminal
+
+Bybit Analytics
+
+Binance Futures Dashboard
+
+Professional Quant Platforms
+
+Modern Fintech Applications
+
+=================================
+REMOVE LARGE EMPTY CARDS
+========================
+
+Current problem:
+
+Cards are extremely large.
+
+Most of the space is empty.
+
+Information density is too low.
+
+Required:
+
+Reduce card height by 50-70%.
+
+Show more information above the fold.
+
+=================================
+TOP SECTION
+===========
+
+Create a modern account summary row.
+
+Display:
+
+Account Balance
+
+Today's PnL
+
+Daily Target Progress
+
+Daily Loss Buffer
+
+Trades Remaining
+
+Example:
+
+$470.00
++$25.50
+51% Target Complete
+$10 Loss Buffer
+2 Trades Remaining
+
+Use compact metric cards.
+
+=================================
+ACCOUNT HEALTH SCORE
+====================
+
+Add a circular gauge.
+
+Account Health
+
+0-100 Score
+
+Factors:
+
+Current Drawdown
+
+Daily PnL
+
+Risk Exposure
+
+Win Rate
+
+Examples:
+
+90-100 = Excellent
+
+70-89 = Good
+
+50-69 = Warning
+
+Below 50 = High Risk
+
+=================================
+DAILY TARGET PROGRESS
+=====================
+
+Replace static numbers with a progress bar.
+
+Example:
+
+Target: $50
+
+Current: $25.50
+
+Progress: 51%
+
+Animated progress indicator.
+
+=================================
+RISK EXPOSURE WIDGET
+====================
+
+Show:
+
+Current Open Risk
+
+Daily Risk Used
+
+Daily Risk Remaining
+
+Example:
+
+Used:
+$5
+
+Remaining:
+$5
+
+Gauge visualization.
+
+=================================
+EQUITY CURVE
+============
+
+Add an equity curve chart.
+
+Display:
+
+Account Growth
+
+Daily Growth
+
+Weekly Growth
+
+Monthly Growth
+
+Smooth chart.
+
+Professional style.
+
+=================================
+PERFORMANCE ANALYTICS
+=====================
+
+Add mini charts.
+
+Win Rate
+
+Profit Factor
+
+Average Win
+
+Average Loss
+
+Maximum Drawdown
+
+Use sparklines.
+
+=================================
+DISCIPLINE TRACKER
+==================
+
+Display:
+
+Trades Used
+
+Trades Remaining
+
+Consecutive Losses
+
+Daily Rule Compliance
+
+Example:
+
+Trades:
+2 / 4
+
+Losses:
+0 / 2
+
+Discipline Score:
+92%
+
+=================================
+MODERN COLOR SYSTEM
+===================
+
+Use colors carefully.
+
+Green:
+Profit
+
+Red:
+Loss
+
+Blue:
+Account
+
+Yellow:
+Warnings
+
+Avoid excessive glowing borders.
+
+Avoid neon appearance.
+
+=================================
+TYPOGRAPHY
+==========
+
+Large important numbers.
+
+Small labels.
+
+Example:
+
+$470.00
+
+Account Balance
+
+NOT:
+
+Account Balance
+
+$470.00
+
+Numbers must dominate the layout.
+
+=================================
+LAYOUT
+======
+
+Section 1:
+Account Summary
+
+Section 2:
+Equity Curve
+
+Section 3:
+Risk Metrics
+
+Section 4:
+Performance Analytics
+
+Section 5:
+Discipline Tracker
+
+=================================
+SCIENTIFIC LOOK
+===============
+
+The dashboard should feel data-driven.
+
+More charts.
+
+More analytics.
+
+Less empty space.
+
+Less decorative cards.
+
+More quantitative information.
+
+The user should immediately understand:
+
+How much money they have.
+
+How much risk is being taken.
+
+How close they are to the target.
+
+How well they are performing.
+
+How disciplined they are.
+
+=================================
+FINAL OBJECTIVE
+===============
+
+The dashboard should look like a professional trading analytics platform, not a simple CRUD admin panel.

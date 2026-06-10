@@ -1,0 +1,346 @@
+CRITICAL ISSUES TO FIX
+
+The application looks good visually, but there are major functional problems that must be fixed.
+
+=================================
+
+1. FAKE SYMBOLS / FAKE PRICES
+   =================================
+
+Current Problem:
+
+The application is showing fake, static, demo, or generated prices.
+
+Examples:
+
+BTC price is not matching real market price.
+
+Gold price is not matching real market price.
+
+Forex prices are not matching live market prices.
+
+This makes the risk calculations inaccurate.
+
+Required Fix:
+
+Connect to a real market data source.
+
+Use live market prices.
+
+Price updates should be near real-time.
+
+Target refresh:
+
+1 second or faster.
+
+Supported markets:
+
+Crypto
+Forex
+Stocks
+Indices
+Commodities
+Metals
+
+Examples:
+
+BTCUSDT
+ETHUSDT
+XAUUSD
+EURUSD
+GBPUSD
+USDJPY
+NAS100
+US30
+SPX500
+
+The app must never display fake prices.
+
+=================================
+2. SYMBOL FILTERING NOT WORKING
+===============================
+
+Current Problem:
+
+When selecting a market type, the related symbols do not appear correctly.
+
+Example:
+
+Select Crypto:
+
+Expected:
+BTCUSDT
+ETHUSDT
+SOLUSDT
+XRPUSDT
+
+Actual:
+Wrong symbols or empty list.
+
+Example:
+
+Select Forex:
+
+Expected:
+EURUSD
+GBPUSD
+USDJPY
+AUDUSD
+
+Example:
+
+Select Metals:
+
+Expected:
+XAUUSD
+XAGUSD
+
+Required Fix:
+
+Create dynamic symbol filtering.
+
+Market Type → Symbol List relationship.
+
+Only show symbols belonging to the selected market.
+
+=================================
+3. PRICE SEARCH IS DIFFICULT
+============================
+
+Current Problem:
+
+Finding symbols is difficult.
+
+Required Fix:
+
+Add:
+
+Search Bar
+
+Type:
+BTC
+
+Result:
+BTCUSDT
+
+Type:
+Gold
+
+Result:
+XAUUSD
+
+Type:
+Nasdaq
+
+Result:
+NAS100
+
+Search should be instant.
+
+=================================
+4. USER EXPERIENCE IS CONFUSING
+===============================
+
+Current Problem:
+
+The application contains many features but is difficult to understand.
+
+The workflow is not obvious.
+
+A trader should be able to calculate a trade within seconds.
+
+Required Fix:
+
+Create Simple Mode.
+
+=================================
+SIMPLE MODE
+===========
+
+Step 1
+
+Select Market
+
+Crypto
+Forex
+Gold
+Stocks
+Indices
+
+Step 2
+
+Select Symbol
+
+Step 3
+
+Choose:
+
+BUY
+SELL
+
+Step 4
+
+Enter:
+
+Entry Price
+Stop Loss
+
+Step 5
+
+App Automatically Shows:
+
+Take Profit
+
+Quantity
+
+Lot Size
+
+Risk
+
+Reward
+
+Margin
+
+Step 6
+
+Press:
+
+Save Trade
+
+No unnecessary screens.
+
+=================================
+5. DASHBOARD TOO COMPLEX
+========================
+
+Current Problem:
+
+Too much information displayed at once.
+
+Required Fix:
+
+Dashboard should only show:
+
+Balance
+
+Today's PnL
+
+Trades Used
+
+Trades Remaining
+
+Target Remaining
+
+Loss Remaining
+
+Current Win Rate
+
+Everything else should be under Statistics.
+
+=================================
+6. RISK CALCULATOR SHOULD BE INSTANT
+====================================
+
+Current Problem:
+
+Too many clicks.
+
+Required Fix:
+
+As soon as user enters:
+
+Entry Price
+
+Stop Loss
+
+Immediately calculate:
+
+Quantity
+
+Take Profit
+
+Margin
+
+Risk %
+
+Position Value
+
+No button required.
+
+=================================
+7. MOBILE FIRST DESIGN
+======================
+
+Current Problem:
+
+Feels like a desktop web app.
+
+Required Fix:
+
+Design for phone users first.
+
+Large buttons.
+
+Large text.
+
+Fast navigation.
+
+One-thumb operation.
+
+=================================
+8. PERFORMANCE
+==============
+
+Current Problem:
+
+Some screens feel slow.
+
+Required Fix:
+
+Optimize all screens.
+
+Reduce loading time.
+
+Cache symbol lists.
+
+Cache market data.
+
+Smooth scrolling.
+
+=================================
+9. MARKET DATA ENGINE
+=====================
+
+Must support real-time data from reliable APIs.
+
+No mock data.
+
+No placeholder prices.
+
+No generated prices.
+
+Live prices must be used in all calculations.
+
+=================================
+FINAL GOAL
+==========
+
+A trader should be able to:
+
+Select Symbol
+
+Enter Entry
+
+Enter Stop Loss
+
+See Quantity
+
+See Take Profit
+
+See Risk
+
+See Margin
+
+Within 5 seconds.
+
+The application should feel simple, fast, and professional.

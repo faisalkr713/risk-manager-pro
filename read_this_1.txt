@@ -1,0 +1,250 @@
+You are a senior React Native, Expo, TypeScript, SQLite, and Mobile Application Architect.
+
+Build a complete production-ready Android application called:
+
+RISK MANAGER PRO
+
+Goal:
+Create a professional trading risk management application that helps traders calculate risk, position size, stop loss, take profit, margin, reward/risk ratio, journal trades, and enforce discipline.
+
+TECHNOLOGY
+
+* React Native
+* Expo
+* TypeScript
+* SQLite
+* React Navigation
+* Async Storage
+* EAS Build Support
+* Android First
+
+PROJECT STRUCTURE
+
+Generate the complete project structure including:
+
+/assets
+/components
+/screens
+/navigation
+/database
+/hooks
+/utils
+/types
+/constants
+
+APP FEATURES
+
+1. Dashboard
+
+Display:
+
+* Account Balance
+* Daily PnL
+* Daily Target
+* Daily Loss Limit
+* Trades Used
+* Trades Remaining
+* Win Rate
+* Profit Factor
+* Drawdown
+
+2. Universal Risk Calculator
+
+Supports:
+
+* Forex
+* Crypto
+* Stocks
+* Futures
+* Indices
+* Commodities
+* Metals
+* Custom Assets
+
+Inputs:
+
+* Symbol
+* Buy/Sell
+* Entry Price
+* Stop Loss Price
+* Risk Amount
+* Reward Risk Ratio
+* Leverage
+
+Auto Calculate:
+
+* Stop Distance
+* Take Profit
+* Quantity
+* Lot Size
+* Margin Required
+* Position Value
+* Risk %
+* Potential Profit
+* Potential Loss
+
+3. Discipline Mode
+
+Default Profile:
+
+Balance = $470
+
+Daily Target = $50
+
+Daily Loss Limit = $10
+
+Risk Per Trade = $5
+
+Maximum Trades Per Day = 4
+
+Maximum Consecutive Losses = 2
+
+Minimum Reward Risk = 2:1
+
+Auto Lock Trading If:
+
+* Profit >= $50
+* Loss <= -$10
+* Trades >= 4
+* Consecutive Losses >= 2
+
+Show:
+
+"STOP TRADING FOR TODAY"
+
+4. Trade Journal
+
+SQLite Database
+
+Fields:
+
+* Date
+* Time
+* Symbol
+* Direction
+* Entry
+* Stop Loss
+* Take Profit
+* Quantity
+* Result
+* Profit/Loss
+* Notes
+
+Functions:
+
+* Add
+* Edit
+* Delete
+* Search
+* Filter
+
+5. Statistics
+
+Calculate:
+
+* Win Rate
+* Average Win
+* Average Loss
+* Profit Factor
+* Max Drawdown
+* Total Trades
+* Total Profit
+* Total Loss
+* Monthly Performance
+
+6. Broker Profiles
+
+Support:
+
+* OKX
+* Bybit
+* Binance
+* Exness
+* IC Markets
+* Vantage
+* Pepperstone
+* Custom
+
+Store:
+
+* Contract Size
+* Tick Value
+* Tick Size
+* Leverage
+* Commission
+* Lot Step
+
+7. Custom Asset Manager
+
+User can create:
+
+* Symbol
+* Asset Type
+* Contract Size
+* Tick Size
+* Tick Value
+* Currency
+* Leverage
+
+8. Screenshot Analyzer Page
+
+User uploads chart screenshot.
+
+User manually marks:
+
+* Entry
+* Stop Loss
+* Take Profit
+
+App instantly calculates:
+
+* Risk
+* Quantity
+* Margin
+* RR Ratio
+
+UI DESIGN
+
+Dark Theme
+
+Background:
+#121212
+
+Cards:
+#1E1E1E
+
+Success:
+#00C853
+
+Danger:
+#FF1744
+
+Warning:
+#FFD600
+
+Modern professional trading dashboard.
+
+OUTPUT
+
+Generate:
+
+* Complete source code
+* All files
+* Database schema
+* Navigation setup
+* Components
+* Screens
+* Utilities
+* Installation instructions
+
+The project must compile successfully with:
+
+npm install
+
+npx expo start
+
+eas build --platform android
+
+Do not provide examples.
+
+Generate actual production-ready code.
