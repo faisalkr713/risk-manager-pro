@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import getDb from '../database';
+import pool from '../database';
 import { requireAuth } from '../middleware/auth';
 
 const router = Router();
@@ -11,57 +11,57 @@ interface Asset {
   currency: string; leverage: number; created_at: string;
 }
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    res.json(getDb().all('SELECT * FROM assets WHERE user_id = ? ORDER BY symbol ASC', [req.user!.userId]));
+    const { rows } = await pool.query('SELECT * FROM assets WHERE user_id = $1 ORDER BY symbol ASC', [req.user!.userId]);
+    res.json(rows);
   } catch { res.status(500).json({ error: 'Failed to fetch assets' }); }
 });
 
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const asset = getDb().get('SELECT * FROM assets WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]) as unknown as Asset | undefined;
-    if (!asset) return res.status(404).json({ error: 'Asset not found' });
-    res.json(asset);
+    const { rows } = await pool.query('SELECT * FROM assets WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
+    if (!rows.length) return res.status(404).json({ error: 'Asset not found' });
+    res.json(rows[0]);
   } catch { res.status(500).json({ error: 'Failed to fetch asset' }); }
 });
 
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
     const { symbol, asset_type, contract_size, tick_size, tick_value, currency, leverage } = req.body;
     if (!symbol || !asset_type) return res.status(400).json({ error: 'Symbol and asset type are required' });
-    const r = db.run(
-      'INSERT INTO assets (user_id, symbol, asset_type, contract_size, tick_size, tick_value, currency, leverage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    const { rows } = await pool.query(
+      'INSERT INTO assets (user_id, symbol, asset_type, contract_size, tick_size, tick_value, currency, leverage) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
       [req.user!.userId, String(symbol).toUpperCase(), asset_type, Number(contract_size)||1, Number(tick_size)||0.01, Number(tick_value)||1, currency||'USD', Number(leverage)||1]
     );
-    res.status(201).json(db.get('SELECT * FROM assets WHERE id = ?', [r.lastInsertRowid]));
+    res.status(201).json(rows[0]);
   } catch { res.status(500).json({ error: 'Failed to create asset' }); }
 });
 
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
-    const existing = db.get('SELECT * FROM assets WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]) as unknown as Asset | undefined;
-    if (!existing) return res.status(404).json({ error: 'Asset not found' });
+    const { rows: existing } = await pool.query('SELECT * FROM assets WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
+    if (!existing.length) return res.status(404).json({ error: 'Asset not found' });
+    const e = existing[0] as Asset;
     const { symbol, asset_type, contract_size, tick_size, tick_value, currency, leverage } = req.body;
-    db.run(
-      'UPDATE assets SET symbol=?,asset_type=?,contract_size=?,tick_size=?,tick_value=?,currency=?,leverage=? WHERE id=? AND user_id=?',
-      [symbol?String(symbol).toUpperCase():existing.symbol, asset_type||existing.asset_type,
-       contract_size!==undefined?Number(contract_size):existing.contract_size,
-       tick_size!==undefined?Number(tick_size):existing.tick_size,
-       tick_value!==undefined?Number(tick_value):existing.tick_value,
-       currency||existing.currency, leverage!==undefined?Number(leverage):existing.leverage,
+    const { rows } = await pool.query(
+      'UPDATE assets SET symbol=$1,asset_type=$2,contract_size=$3,tick_size=$4,tick_value=$5,currency=$6,leverage=$7 WHERE id=$8 AND user_id=$9 RETURNING *',
+      [symbol?String(symbol).toUpperCase():e.symbol, asset_type||e.asset_type,
+       contract_size!==undefined?Number(contract_size):e.contract_size,
+       tick_size!==undefined?Number(tick_size):e.tick_size,
+       tick_value!==undefined?Number(tick_value):e.tick_value,
+       currency||e.currency, leverage!==undefined?Number(leverage):e.leverage,
        req.params.id, req.user!.userId]
     );
-    res.json(db.get('SELECT * FROM assets WHERE id = ?', [req.params.id]));
+    res.json(rows[0]);
   } catch { res.status(500).json({ error: 'Failed to update asset' }); }
 });
 
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
-    if (!db.get('SELECT id FROM assets WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId])) return res.status(404).json({ error: 'Asset not found' });
-    db.run('DELETE FROM assets WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]);
+    const { rows } = await pool.query('SELECT id FROM assets WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
+    if (!rows.length) return res.status(404).json({ error: 'Asset not found' });
+    await pool.query('DELETE FROM assets WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
     res.json({ success: true });
   } catch { res.status(500).json({ error: 'Failed to delete asset' }); }
 });

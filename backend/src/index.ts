@@ -7,6 +7,7 @@ import assetsRouter from './routes/assets';
 import brokersRouter from './routes/brokers';
 import pricesRouter from './routes/prices';
 import authRouter from './routes/auth';
+import { initDb } from './database';
 import { startPriceService } from './services/priceService';
 
 const app = express();
@@ -36,10 +37,17 @@ if (isProd) {
   });
 }
 
-startPriceService();
+async function start() {
+  await initDb();
+  startPriceService();
+  app.listen(PORT, () => {
+    console.log(`Risk Manager Pro backend running on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Risk Manager Pro backend running on port ${PORT}`);
+start().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });
 
 export default app;

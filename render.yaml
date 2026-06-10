@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: risk-manager-pro
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: risk-manager-pro-db
+          property: connectionString
+
+databases:
+  - name: risk-manager-pro-db
+    databaseName: riskmanager
+    user: riskmanager
+    plan: free
+    region: oregon

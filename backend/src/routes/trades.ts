@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import getDb from '../database';
+import pool from '../database';
 import { requireAuth } from '../middleware/auth';
 
 const router = Router();
@@ -12,26 +12,28 @@ interface Trade {
   profit_loss: number; notes: string; created_at: string;
 }
 
-// GET all trades
-router.get('/', (req: Request, res: Response) => {
+// GET all trades (with filters)
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
     const { date, symbol, direction, result, limit = '100', offset = '0' } = req.query;
-    let query = 'SELECT * FROM trades WHERE user_id = ?';
     const params: (string | number)[] = [req.user!.userId];
+    let where = 'WHERE user_id = $1';
+    let i = 2;
 
-    if (date)      { query += ' AND date = ?';                      params.push(String(date)); }
-    if (symbol)    { query += ' AND UPPER(symbol) LIKE ?';          params.push(`%${String(symbol).toUpperCase()}%`); }
-    if (direction) { query += ' AND direction = ?';                 params.push(String(direction).toUpperCase()); }
-    if (result)    { query += ' AND result = ?';                    params.push(String(result).toUpperCase()); }
+    if (date)      { where += ` AND date = $${i++}`;                          params.push(String(date)); }
+    if (symbol)    { where += ` AND UPPER(symbol) LIKE $${i++}`;              params.push(`%${String(symbol).toUpperCase()}%`); }
+    if (direction) { where += ` AND direction = $${i++}`;                     params.push(String(direction).toUpperCase()); }
+    if (result)    { where += ` AND result = $${i++}`;                        params.push(String(result).toUpperCase()); }
 
-    const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
-    const { total } = db.get(countQuery, params) as unknown as { total: number };
+    const countRes = await pool.query(`SELECT COUNT(*) as total FROM trades ${where}`, params);
+    const total = parseInt(countRes.rows[0].total);
 
-    query += ' ORDER BY date DESC, time DESC LIMIT ? OFFSET ?';
-    params.push(Number(limit), Number(offset));
-    const trades = db.all(query, params) as unknown as Trade[];
-    res.json({ trades, total });
+    const dataParams = [...params, Number(limit), Number(offset)];
+    const { rows } = await pool.query(
+      `SELECT * FROM trades ${where} ORDER BY date DESC, time DESC LIMIT $${i} OFFSET $${i + 1}`,
+      dataParams
+    );
+    res.json({ trades: rows, total });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch trades' });
@@ -39,30 +41,29 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // GET stats overview
-router.get('/stats/overview', (req: Request, res: Response) => {
+router.get('/stats/overview', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
-    const trades = db.all(
-      'SELECT * FROM trades WHERE user_id = ? ORDER BY date ASC, time ASC',
+    const { rows: trades } = await pool.query(
+      'SELECT * FROM trades WHERE user_id = $1 ORDER BY date ASC, time ASC',
       [req.user!.userId]
-    ) as unknown as Trade[];
+    ) as { rows: Trade[] };
 
     const total = trades.length;
     const wins   = trades.filter(t => t.result === 'WIN');
     const losses = trades.filter(t => t.result === 'LOSS');
     const bes    = trades.filter(t => t.result === 'BE');
 
-    const winRate     = total > 0 ? (wins.length / total) * 100 : 0;
-    const totalProfit = wins.reduce((s, t) => s + t.profit_loss, 0);
-    const totalLoss   = Math.abs(losses.reduce((s, t) => s + t.profit_loss, 0));
+    const winRate      = total > 0 ? (wins.length / total) * 100 : 0;
+    const totalProfit  = wins.reduce((s, t) => s + Number(t.profit_loss), 0);
+    const totalLoss    = Math.abs(losses.reduce((s, t) => s + Number(t.profit_loss), 0));
     const profitFactor = totalLoss > 0 ? totalProfit / totalLoss : (totalProfit > 0 ? 999 : 0);
-    const avgWin   = wins.length   > 0 ? totalProfit / wins.length   : 0;
-    const avgLoss  = losses.length > 0 ? totalLoss   / losses.length : 0;
-    const netPnl   = trades.reduce((s, t) => s + t.profit_loss, 0);
+    const avgWin  = wins.length   > 0 ? totalProfit / wins.length   : 0;
+    const avgLoss = losses.length > 0 ? totalLoss   / losses.length : 0;
+    const netPnl  = trades.reduce((s, t) => s + Number(t.profit_loss), 0);
 
     let peak = 0, maxDrawdown = 0, running = 0;
     for (const t of trades) {
-      running += t.profit_loss;
+      running += Number(t.profit_loss);
       if (running > peak) peak = running;
       const dd = peak - running;
       if (dd > maxDrawdown) maxDrawdown = dd;
@@ -72,7 +73,7 @@ router.get('/stats/overview', (req: Request, res: Response) => {
     for (const t of trades) {
       const month = t.date.substring(0, 7);
       if (!monthlyMap[month]) monthlyMap[month] = { profit: 0, trades: 0, wins: 0 };
-      monthlyMap[month].profit += t.profit_loss;
+      monthlyMap[month].profit += Number(t.profit_loss);
       monthlyMap[month].trades++;
       if (t.result === 'WIN') monthlyMap[month].wins++;
     }
@@ -88,40 +89,37 @@ router.get('/stats/overview', (req: Request, res: Response) => {
       avgWin: round(avgWin), avgLoss: round(avgLoss), maxDrawdown: round(maxDrawdown),
       monthly,
     });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });
 
 // GET single trade
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
-    const trade = db.get('SELECT * FROM trades WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]) as unknown as Trade | undefined;
-    if (!trade) return res.status(404).json({ error: 'Trade not found' });
-    res.json(trade);
+    const { rows } = await pool.query('SELECT * FROM trades WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
+    if (!rows.length) return res.status(404).json({ error: 'Trade not found' });
+    res.json(rows[0]);
   } catch {
     res.status(500).json({ error: 'Failed to fetch trade' });
   }
 });
 
 // POST create trade
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
     const { date, time, symbol, direction, entry, stop_loss, take_profit, quantity, result, profit_loss, notes } = req.body;
     if (!date || !time || !symbol || !direction || entry === undefined || stop_loss === undefined ||
         take_profit === undefined || !quantity || !result || profit_loss === undefined) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    const r = db.run(
-      'INSERT INTO trades (user_id, date, time, symbol, direction, entry, stop_loss, take_profit, quantity, result, profit_loss, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    const { rows } = await pool.query(
+      'INSERT INTO trades (user_id, date, time, symbol, direction, entry, stop_loss, take_profit, quantity, result, profit_loss, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *',
       [req.user!.userId, date, time, String(symbol).toUpperCase(), String(direction).toUpperCase(),
        Number(entry), Number(stop_loss), Number(take_profit), Number(quantity),
        String(result).toUpperCase(), Number(profit_loss), notes || '']
     );
-    const newTrade = db.get('SELECT * FROM trades WHERE id = ?', [r.lastInsertRowid]) as unknown as Trade;
-    res.status(201).json(newTrade);
+    res.status(201).json(rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create trade' });
@@ -129,42 +127,40 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // PUT update trade
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
-    const existing = db.get('SELECT * FROM trades WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]) as unknown as Trade | undefined;
-    if (!existing) return res.status(404).json({ error: 'Trade not found' });
+    const { rows: existing } = await pool.query('SELECT * FROM trades WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
+    if (!existing.length) return res.status(404).json({ error: 'Trade not found' });
+    const e = existing[0] as Trade;
     const { date, time, symbol, direction, entry, stop_loss, take_profit, quantity, result, profit_loss, notes } = req.body;
-    db.run(
-      'UPDATE trades SET date=?,time=?,symbol=?,direction=?,entry=?,stop_loss=?,take_profit=?,quantity=?,result=?,profit_loss=?,notes=? WHERE id=? AND user_id=?',
+    const { rows } = await pool.query(
+      'UPDATE trades SET date=$1,time=$2,symbol=$3,direction=$4,entry=$5,stop_loss=$6,take_profit=$7,quantity=$8,result=$9,profit_loss=$10,notes=$11 WHERE id=$12 AND user_id=$13 RETURNING *',
       [
-        date||existing.date, time||existing.time,
-        symbol ? String(symbol).toUpperCase() : existing.symbol,
-        direction ? String(direction).toUpperCase() : existing.direction,
-        entry!==undefined ? Number(entry) : existing.entry,
-        stop_loss!==undefined ? Number(stop_loss) : existing.stop_loss,
-        take_profit!==undefined ? Number(take_profit) : existing.take_profit,
-        quantity!==undefined ? Number(quantity) : existing.quantity,
-        result ? String(result).toUpperCase() : existing.result,
-        profit_loss!==undefined ? Number(profit_loss) : existing.profit_loss,
-        notes!==undefined ? notes : existing.notes,
+        date||e.date, time||e.time,
+        symbol ? String(symbol).toUpperCase() : e.symbol,
+        direction ? String(direction).toUpperCase() : e.direction,
+        entry!==undefined ? Number(entry) : e.entry,
+        stop_loss!==undefined ? Number(stop_loss) : e.stop_loss,
+        take_profit!==undefined ? Number(take_profit) : e.take_profit,
+        quantity!==undefined ? Number(quantity) : e.quantity,
+        result ? String(result).toUpperCase() : e.result,
+        profit_loss!==undefined ? Number(profit_loss) : e.profit_loss,
+        notes!==undefined ? notes : e.notes,
         req.params.id, req.user!.userId,
       ]
     );
-    const updated = db.get('SELECT * FROM trades WHERE id = ?', [req.params.id]) as unknown as Trade;
-    res.json(updated);
+    res.json(rows[0]);
   } catch {
     res.status(500).json({ error: 'Failed to update trade' });
   }
 });
 
 // DELETE trade
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const db = getDb();
-    const existing = db.get('SELECT id FROM trades WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]);
-    if (!existing) return res.status(404).json({ error: 'Trade not found' });
-    db.run('DELETE FROM trades WHERE id = ? AND user_id = ?', [req.params.id, req.user!.userId]);
+    const { rows } = await pool.query('SELECT id FROM trades WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
+    if (!rows.length) return res.status(404).json({ error: 'Trade not found' });
+    await pool.query('DELETE FROM trades WHERE id = $1 AND user_id = $2', [req.params.id, req.user!.userId]);
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: 'Failed to delete trade' });

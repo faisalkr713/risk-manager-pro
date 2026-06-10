@@ -1,50 +1,36 @@
-import { Database as SqliteDatabase } from 'node-sqlite3-wasm';
-import path from 'path';
+import { Pool } from 'pg';
 
-const DB_PATH = process.env.DB_PATH ?? path.join(__dirname, '..', 'risk_manager.db');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
 
-let db: SqliteDatabase;
-
-export function getDb(): SqliteDatabase {
-  if (!db) {
-    db = new SqliteDatabase(DB_PATH);
-    db.run('PRAGMA journal_mode = WAL');
-    db.run('PRAGMA foreign_keys = ON');
-    initializeSchema();
-  }
-  return db;
-}
-
-function initializeSchema(): void {
-  // Users
-  db.run(`
+export async function initDb(): Promise<void> {
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL DEFAULT '',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Settings — per user
-  db.run(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS settings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       key TEXT NOT NULL,
       value TEXT NOT NULL,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(user_id, key),
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, key)
     )
   `);
 
-  // Trades — per user
-  db.run(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS trades (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       date TEXT NOT NULL,
       time TEXT NOT NULL,
       symbol TEXT NOT NULL,
@@ -56,16 +42,14 @@ function initializeSchema(): void {
       result TEXT NOT NULL,
       profit_loss REAL NOT NULL,
       notes TEXT DEFAULT '',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Brokers — per user
-  db.run(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS brokers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       asset_class TEXT NOT NULL,
       contract_size REAL NOT NULL DEFAULT 100000,
@@ -75,16 +59,14 @@ function initializeSchema(): void {
       commission REAL NOT NULL DEFAULT 0,
       lot_step REAL NOT NULL DEFAULT 0.01,
       is_custom INTEGER NOT NULL DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
 
-  // Assets — per user
-  db.run(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS assets (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       symbol TEXT NOT NULL,
       asset_type TEXT NOT NULL,
       contract_size REAL NOT NULL DEFAULT 1,
@@ -92,10 +74,11 @@ function initializeSchema(): void {
       tick_value REAL NOT NULL DEFAULT 1,
       currency TEXT NOT NULL DEFAULT 'USD',
       leverage INTEGER NOT NULL DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
+  console.log('Database schema ready');
 }
 
 export const DEFAULT_SETTINGS: Record<string, string> = {
@@ -118,23 +101,22 @@ export const DEFAULT_BROKERS = [
   ['Pepperstone', 'Forex',  100000, 10,   0.0001, 200,  3.5,   0.01,  0],
 ];
 
-export function seedUserDefaults(userId: number): void {
-  const database = getDb();
+export async function seedUserDefaults(userId: number): Promise<void> {
   for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
-    database.run(
-      'INSERT OR IGNORE INTO settings (user_id, key, value) VALUES (?, ?, ?)',
+    await pool.query(
+      'INSERT INTO settings (user_id, key, value) VALUES ($1, $2, $3) ON CONFLICT (user_id, key) DO NOTHING',
       [userId, key, value]
     );
   }
-  const count = (database.get('SELECT COUNT(*) as c FROM brokers WHERE user_id = ?', [userId]) as unknown as { c: number }).c;
-  if (count === 0) {
+  const { rows } = await pool.query('SELECT COUNT(*) as c FROM brokers WHERE user_id = $1', [userId]);
+  if (parseInt(rows[0].c) === 0) {
     for (const b of DEFAULT_BROKERS) {
-      database.run(
-        'INSERT INTO brokers (user_id, name, asset_class, contract_size, tick_value, tick_size, leverage, commission, lot_step, is_custom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      await pool.query(
+        'INSERT INTO brokers (user_id, name, asset_class, contract_size, tick_value, tick_size, leverage, commission, lot_step, is_custom) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
         [userId, ...b]
       );
     }
   }
 }
 
-export default getDb;
+export default pool;
