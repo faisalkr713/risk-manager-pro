@@ -6,7 +6,8 @@ export type Screen =
   | 'discipline'
   | 'brokers'
   | 'assets'
-  | 'screenshot';
+  | 'screenshot'
+  | 'upgrade';
 
 export interface Trade {
   id: number;

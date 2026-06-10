@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { calculateRisk, getDefaultContractSpec, formatCurrency, formatPrice } from '../utils/calculations';
 import { CalcResult } from '../types';
-import { ASSET_TYPES } from '../constants';
+import { ASSET_TYPES, API_BASE } from '../constants';
 
-const ScreenshotAnalyzer: React.FC = () => {
+const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -19,6 +19,9 @@ const ScreenshotAnalyzer: React.FC = () => {
   const [accountBalance, setAccountBalance] = useState('470');
 
   const [result, setResult] = useState<CalcResult | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -26,6 +29,38 @@ const ScreenshotAnalyzer: React.FC = () => {
     reader.onload = e => setImageUrl(e.target?.result as string);
     reader.readAsDataURL(file);
     setResult(null);
+    setAiAnalysis('');
+    setAiError('');
+  };
+
+  const runAiAnalysis = async () => {
+    if (!imageUrl) return;
+    setAiLoading(true);
+    setAiError('');
+    setAiAnalysis('');
+    try {
+      const base64 = imageUrl.split(',')[1];
+      const mimeType = imageUrl.split(';')[0].split(':')[1];
+      const token = localStorage.getItem('rmp_token');
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ imageBase64: base64, mimeType }),
+      });
+      const data = await res.json() as { analysis?: string; error?: string; limitReached?: boolean };
+      if (data.limitReached) {
+        setAiError('Free plan: 1 analysis/month used. Upgrade to Pro for unlimited.');
+        if (onUpgrade) onUpgrade();
+      } else if (data.error) {
+        setAiError(data.error);
+      } else {
+        setAiAnalysis(data.analysis ?? '');
+      }
+    } catch {
+      setAiError('Analysis failed. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -158,12 +193,32 @@ const ScreenshotAnalyzer: React.FC = () => {
             onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
           />
           {imageUrl && (
-            <button
-              onClick={() => { setImageUrl(null); setResult(null); }}
-              style={ghostBtn}
-            >
-              Remove Image
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={runAiAnalysis} disabled={aiLoading} style={{ ...primaryBtn, flex: 1, opacity: aiLoading ? 0.7 : 1 }}>
+                {aiLoading ? '🤖 Analyzing...' : '🤖 AI Analyze Chart'}
+              </button>
+              <button onClick={() => { setImageUrl(null); setResult(null); setAiAnalysis(''); }} style={ghostBtn}>
+                Remove
+              </button>
+            </div>
+          )}
+
+          {/* AI Analysis Result */}
+          {aiError && (
+            <div style={{ background: '#200A10', border: '1px solid #FF174430', borderRadius: 12, padding: 16 }}>
+              <p style={{ color: '#FF1744', margin: 0, fontSize: 13 }}>⚠ {aiError}</p>
+            </div>
+          )}
+          {aiAnalysis && (
+            <div style={{ background: '#0A1628', border: '1px solid #2979FF30', borderRadius: 12, padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <span style={{ fontSize: 20 }}>🤖</span>
+                <h3 style={{ color: '#2979FF', margin: 0, fontSize: 15, fontWeight: 700 }}>AI Chart Analysis</h3>
+              </div>
+              <div style={{ color: '#C0C0C0', fontSize: 13, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+                {aiAnalysis}
+              </div>
+            </div>
           )}
 
           {/* Results */}

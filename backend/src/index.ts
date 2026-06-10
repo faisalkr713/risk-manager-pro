@@ -7,6 +7,8 @@ import assetsRouter from './routes/assets';
 import brokersRouter from './routes/brokers';
 import pricesRouter from './routes/prices';
 import authRouter from './routes/auth';
+import paymentsRouter from './routes/payments';
+import analyzeRouter from './routes/analyze';
 import { initDb } from './database';
 import { startPriceService } from './services/priceService';
 
@@ -23,6 +25,10 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/assets', assetsRouter);
 app.use('/api/brokers', brokersRouter);
 app.use('/api/prices', pricesRouter);
+// Webhook needs raw body before json parser
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/payments', paymentsRouter);
+app.use('/api/analyze', analyzeRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

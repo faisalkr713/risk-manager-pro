@@ -58,4 +58,5 @@ export const NAV_ITEMS = [
   { id: 'brokers',     label: 'Broker Profiles',     icon: '🏦' },
   { id: 'assets',      label: 'Asset Manager',       icon: '💎' },
   { id: 'screenshot',  label: 'Screenshot Analyzer', icon: '📷' },
+  { id: 'upgrade',     label: 'Upgrade to Pro',      icon: '⚡' },
 ] as const;

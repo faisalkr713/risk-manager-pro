@@ -1,8 +1,6 @@
 import { Pool } from 'pg';
 
 const dbUrl = process.env.DATABASE_URL ?? '';
-// Render internal connections use hostname like dpg-xxx (no domain) — no SSL needed.
-// External/custom postgres URLs with a real domain do need SSL.
 const needsSsl = dbUrl.includes('.render.com') || (!dbUrl.includes('localhost') && dbUrl.includes('.'));
 
 const pool = new Pool({
@@ -17,9 +15,17 @@ export async function initDb(): Promise<void> {
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL DEFAULT '',
+      plan TEXT NOT NULL DEFAULT 'free',
+      stripe_customer_id TEXT,
+      stripe_subscription_id TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+
+  // Migrate existing users table (add columns if they don't exist)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free'`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS settings (
@@ -83,6 +89,15 @@ export async function initDb(): Promise<void> {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS screenshot_analyses (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      analysis TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   console.log('Database schema ready');
 }
 
@@ -122,6 +137,28 @@ export async function seedUserDefaults(userId: number): Promise<void> {
       );
     }
   }
+}
+
+// Count trades this calendar month for a user
+export async function getMonthlyTradeCount(userId: number): Promise<number> {
+  const start = new Date();
+  start.setDate(1); start.setHours(0,0,0,0);
+  const { rows } = await pool.query(
+    'SELECT COUNT(*) as c FROM trades WHERE user_id = $1 AND created_at >= $2',
+    [userId, start.toISOString()]
+  );
+  return parseInt(rows[0].c);
+}
+
+// Count screenshot analyses this calendar month for a user
+export async function getMonthlyAnalysisCount(userId: number): Promise<number> {
+  const start = new Date();
+  start.setDate(1); start.setHours(0,0,0,0);
+  const { rows } = await pool.query(
+    'SELECT COUNT(*) as c FROM screenshot_analyses WHERE user_id = $1 AND created_at >= $2',
+    [userId, start.toISOString()]
+  );
+  return parseInt(rows[0].c);
 }
 
 export default pool;

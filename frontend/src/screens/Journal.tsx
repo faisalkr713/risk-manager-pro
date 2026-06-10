@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Trade } from '../types';
 import { apiGet, apiPost, apiPut, apiDelete } from '../hooks/useApi';
 import { formatCurrency } from '../utils/calculations';
+import { notifyProfitableTrade } from '../App';
 
 interface TradeForm {
   date: string;
@@ -31,7 +32,7 @@ const emptyForm = (): TradeForm => ({
   notes: '',
 });
 
-const Journal: React.FC = () => {
+const Journal: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade }) => {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -92,7 +93,16 @@ const Journal: React.FC = () => {
       if (editId !== null) {
         await apiPut(`/trades/${editId}`, payload);
       } else {
-        await apiPost('/trades', payload);
+        const res = await apiPost('/trades', payload) as { limitReached?: boolean; error?: string } | Trade;
+        if ('limitReached' in res && res.limitReached) {
+          setError('You\'ve reached the 30 trades/month free limit.');
+          if (onUpgrade) onUpgrade();
+          return;
+        }
+        // Show coffee popup on profitable WIN trade
+        if (payload.result === 'WIN' && payload.profit_loss > 0) {
+          notifyProfitableTrade();
+        }
       }
       setShowForm(false);
       setEditId(null);

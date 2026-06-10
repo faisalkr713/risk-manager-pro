@@ -9,9 +9,11 @@ interface SidebarProps {
   onToggle: () => void;
   user: { name: string; email: string };
   onLogout: () => void;
+  isPro: boolean;
+  tradesLeft: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ active, onNavigate, collapsed, onToggle, user, onLogout }) => (
+const Sidebar: React.FC<SidebarProps> = ({ active, onNavigate, collapsed, onToggle, user, onLogout, isPro, tradesLeft }) => (
   <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
     <div className="sidebar-header" style={{ justifyContent: collapsed ? 'center' : 'space-between' }}>
       {!collapsed && (
@@ -25,25 +27,52 @@ const Sidebar: React.FC<SidebarProps> = ({ active, onNavigate, collapsed, onTogg
       </button>
     </div>
 
+    {/* Plan badge */}
+    {!collapsed && (
+      <div style={{ padding: '6px 12px 0' }}>
+        <div style={{
+          background: isPro ? 'linear-gradient(90deg,#2979FF,#9C27B0)' : '#2A2A2A',
+          borderRadius: 8, padding: '5px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <span style={{ color: isPro ? '#fff' : '#888', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>
+            {isPro ? '⚡ PRO' : '🔓 FREE'}
+          </span>
+          {!isPro && (
+            <span style={{ color: tradesLeft <= 5 ? '#FF1744' : '#FFD600', fontSize: 11, fontWeight: 600 }}>
+              {tradesLeft} trades left
+            </span>
+          )}
+        </div>
+      </div>
+    )}
+
     <nav className="sidebar-nav">
       {NAV_ITEMS.map(item => {
         const isActive = active === item.id;
+        const isUpgrade = item.id === 'upgrade';
         return (
           <button
             key={item.id}
             className={`nav-btn${isActive ? ' active' : ''}`}
             onClick={() => onNavigate(item.id as Screen)}
             title={collapsed ? item.label : undefined}
-            style={{ justifyContent: collapsed ? 'center' : 'flex-start', padding: collapsed ? '10px 0' : '10px 12px' }}
+            style={{
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '10px 0' : '10px 12px',
+              ...(isUpgrade && !isPro ? {
+                background: 'linear-gradient(90deg, rgba(41,121,255,0.15), rgba(156,39,176,0.15))',
+                borderLeft: '2px solid #2979FF',
+                color: '#2979FF',
+              } : {}),
+            }}
           >
             <span className="nav-icon">{item.icon}</span>
-            {!collapsed && <span>{item.label}</span>}
+            {!collapsed && <span style={isUpgrade && !isPro ? { fontWeight: 700, color: '#2979FF' } : {}}>{item.label}</span>}
           </button>
         );
       })}
     </nav>
 
-    {/* User profile + logout */}
     <div className="sidebar-profile">
       {!collapsed ? (
         <div className="sp-row">

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import pool from '../database';
+import pool, { getMonthlyTradeCount } from '../database';
 import { requireAuth } from '../middleware/auth';
 
 const router = Router();
@@ -108,6 +108,20 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST create trade
 router.post('/', async (req: Request, res: Response) => {
   try {
+    // Enforce free plan limit
+    const { rows: userRows } = await pool.query('SELECT plan FROM users WHERE id = $1', [req.user!.userId]);
+    const plan = userRows[0]?.plan ?? 'free';
+    if (plan === 'free') {
+      const count = await getMonthlyTradeCount(req.user!.userId);
+      if (count >= 30) {
+        return res.status(403).json({
+          error: 'Free plan limit reached',
+          limitReached: true,
+          message: 'Free plan allows 30 journal records per month. Upgrade to Pro for unlimited.',
+        });
+      }
+    }
+
     const { date, time, symbol, direction, entry, stop_loss, take_profit, quantity, result, profit_loss, notes } = req.body;
     if (!date || !time || !symbol || !direction || entry === undefined || stop_loss === undefined ||
         take_profit === undefined || !quantity || !result || profit_loss === undefined) {
