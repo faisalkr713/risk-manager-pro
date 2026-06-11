@@ -117,10 +117,10 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
   };
 
   const inputStyle: React.CSSProperties = {
-    background: '#121212',
-    border: '1px solid #3A3A3A',
+    background: 'var(--bg)',
+    border: '1px solid var(--border-2)',
     borderRadius: 8,
-    color: '#FFFFFF',
+    color: 'var(--text)',
     fontSize: 13,
     padding: '9px 11px',
     width: '100%',
@@ -129,7 +129,7 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
   };
 
   const labelStyle: React.CSSProperties = {
-    color: '#B0B0B0',
+    color: 'var(--text-dim)',
     fontSize: 11,
     fontWeight: 500,
     marginBottom: 4,
@@ -144,7 +144,7 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
       onPaste={handlePaste}
     >
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ color: '#FFFFFF', fontSize: 24, fontWeight: 700, margin: 0 }}>Screenshot Analyzer</h1>
+        <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 700, margin: 0 }}>Screenshot Analyzer</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>Upload a chart screenshot and manually input prices to calculate risk</p>
       </div>
 
@@ -158,9 +158,9 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             style={{
-              border: `2px dashed ${dragOver ? '#2979FF' : '#3A3A3A'}`,
+              border: `2px dashed ${dragOver ? '#2979FF' : 'var(--border-2)'}`,
               borderRadius: 12,
-              background: dragOver ? 'rgba(41,121,255,0.05)' : '#1E1E1E',
+              background: dragOver ? 'rgba(41,121,255,0.05)' : 'var(--surface)',
               minHeight: imageUrl ? 'auto' : 220,
               cursor: 'pointer',
               transition: 'all 0.2s',
@@ -180,7 +180,7 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
             ) : (
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>📷</div>
-                <p style={{ color: '#B0B0B0', margin: 0, fontWeight: 600 }}>Drop chart screenshot here</p>
+                <p style={{ color: 'var(--text-dim)', margin: 0, fontWeight: 600 }}>Drop chart screenshot here</p>
                 <p style={{ color: '#555', fontSize: 12, margin: '8px 0 0' }}>or click to browse • also supports Ctrl+V paste</p>
               </div>
             )}
@@ -223,8 +223,8 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
 
           {/* Results */}
           {result && (
-            <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 20, border: '1px solid #2A2A2A' }}>
-              <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Analysis Results</h2>
+            <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 20, border: '1px solid var(--border)' }}>
+              <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Analysis Results</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
                 <ResultBox label="Stop Distance" value={formatPrice(result.stopDistance)} />
                 <ResultBox label="RR Ratio" value={`1:${result.rrRatio}`} color="#2979FF" />
@@ -248,8 +248,8 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
         </div>
 
         {/* Right: Inputs */}
-        <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 20, border: '1px solid #2A2A2A', height: 'fit-content' }}>
-          <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Trade Parameters</h2>
+        <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 20, border: '1px solid var(--border)', height: 'fit-content' }}>
+          <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Trade Parameters</h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
@@ -275,10 +275,10 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
                         : '2px solid #2A2A2A',
                       background: direction === d
                         ? `${d === 'BUY' ? '#00C853' : '#FF1744'}20`
-                        : '#121212',
+                        : 'var(--bg)',
                       color: direction === d
                         ? (d === 'BUY' ? '#00C853' : '#FF1744')
-                        : '#B0B0B0',
+                        : 'var(--text-dim)',
                       cursor: 'pointer',
                       fontWeight: 700,
                       fontSize: 13,
@@ -387,14 +387,14 @@ const ScreenshotAnalyzer: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade })
   );
 };
 
-const ResultBox: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = '#FFFFFF' }) => (
-  <div style={{ background: '#121212', borderRadius: 8, padding: '10px 12px' }}>
+const ResultBox: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = 'var(--text)' }) => (
+  <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px' }}>
     <div style={{ color: '#555', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
     <div style={{ color, fontWeight: 700, fontFamily: 'monospace', fontSize: 15 }}>{value}</div>
   </div>
 );
 
 const primaryBtn: React.CSSProperties = { background: '#2979FF', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '10px 20px', fontSize: 14, fontWeight: 700 };
-const ghostBtn: React.CSSProperties = { background: 'transparent', border: '1px solid #3A3A3A', borderRadius: 8, color: '#B0B0B0', cursor: 'pointer', padding: '8px 16px', fontSize: 13, fontWeight: 600 };
+const ghostBtn: React.CSSProperties = { background: 'transparent', border: '1px solid var(--border-2)', borderRadius: 8, color: 'var(--text-dim)', cursor: 'pointer', padding: '8px 16px', fontSize: 13, fontWeight: 600 };
 
 export default ScreenshotAnalyzer;

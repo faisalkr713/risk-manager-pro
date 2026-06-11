@@ -102,10 +102,10 @@ const BrokerProfiles: React.FC = () => {
   };
 
   const inputStyle: React.CSSProperties = {
-    background: '#121212',
-    border: '1px solid #3A3A3A',
+    background: 'var(--bg)',
+    border: '1px solid var(--border-2)',
     borderRadius: 8,
-    color: '#FFFFFF',
+    color: 'var(--text)',
     fontSize: 13,
     padding: '8px 10px',
     width: '100%',
@@ -114,7 +114,7 @@ const BrokerProfiles: React.FC = () => {
   };
 
   const labelStyle: React.CSSProperties = {
-    color: '#B0B0B0',
+    color: 'var(--text-dim)',
     fontSize: 11,
     fontWeight: 500,
     marginBottom: 4,
@@ -130,7 +130,7 @@ const BrokerProfiles: React.FC = () => {
     <div style={{ padding: 24, maxWidth: 1100 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h1 style={{ color: '#FFFFFF', fontSize: 24, fontWeight: 700, margin: 0 }}>Broker Profiles</h1>
+          <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 700, margin: 0 }}>Broker Profiles</h1>
           <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>Contract specifications for accurate position sizing</p>
         </div>
         <button
@@ -144,8 +144,8 @@ const BrokerProfiles: React.FC = () => {
       {/* Modal */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#1E1E1E', borderRadius: 16, padding: 24, width: '100%', maxWidth: 600, border: '1px solid #3A3A3A' }}>
-            <h2 style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 700, margin: '0 0 20px' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 600, border: '1px solid var(--border-2)' }}>
+            <h2 style={{ color: 'var(--text)', fontSize: 18, fontWeight: 700, margin: '0 0 20px' }}>
               {editId !== null ? 'Edit Broker' : 'Add Custom Broker'}
             </h2>
             <form onSubmit={handleSubmit}>
@@ -196,7 +196,7 @@ const BrokerProfiles: React.FC = () => {
       )}
 
       {loading ? (
-        <p style={{ color: '#B0B0B0' }}>Loading...</p>
+        <p style={{ color: 'var(--text-dim)' }}>Loading...</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: selectedBroker ? '1fr 320px' : '1fr', gap: 20 }}>
           <div>
@@ -218,7 +218,7 @@ const BrokerProfiles: React.FC = () => {
             {/* Custom Brokers */}
             <SectionLabel>Custom Brokers {customBrokers.length > 0 ? `(${customBrokers.length})` : ''}</SectionLabel>
             {customBrokers.length === 0 ? (
-              <div style={{ background: '#1E1E1E', borderRadius: 10, padding: 24, border: '1px dashed #2A2A2A', textAlign: 'center', color: '#555' }}>
+              <div style={{ background: 'var(--surface)', borderRadius: 10, padding: 24, border: '1px dashed #2A2A2A', textAlign: 'center', color: '#555' }}>
                 No custom brokers yet. Click "+ Add Broker" to create one.
               </div>
             ) : (
@@ -239,10 +239,10 @@ const BrokerProfiles: React.FC = () => {
 
           {/* Detail Panel */}
           {selectedBroker && (
-            <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 20, border: '1px solid #2979FF40', height: 'fit-content', position: 'sticky', top: 20 }}>
+            <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 20, border: '1px solid #2979FF40', height: 'fit-content', position: 'sticky', top: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                 <div>
-                  <h3 style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 700, margin: 0 }}>{selectedBroker.name}</h3>
+                  <h3 style={{ color: 'var(--text)', fontSize: 18, fontWeight: 700, margin: 0 }}>{selectedBroker.name}</h3>
                   <span style={{ background: '#2979FF20', color: '#2979FF', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>
                     {selectedBroker.asset_class}
                   </span>
@@ -266,7 +266,7 @@ const BrokerProfiles: React.FC = () => {
 };
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 style={{ color: '#B0B0B0', fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+  <h2 style={{ color: 'var(--text-dim)', fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 12px' }}>
     {children}
   </h2>
 );
@@ -281,17 +281,17 @@ const BrokerCard: React.FC<{
   <div
     onClick={onSelect}
     style={{
-      background: selected ? '#1A2840' : '#1E1E1E',
+      background: selected ? '#1A2840' : 'var(--surface)',
       borderRadius: 10,
       padding: 16,
-      border: `1px solid ${selected ? '#2979FF60' : '#2A2A2A'}`,
+      border: `1px solid ${selected ? '#2979FF60' : 'var(--border)'}`,
       cursor: 'pointer',
       transition: 'all 0.15s',
     }}
   >
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
       <div>
-        <div style={{ color: '#FFFFFF', fontWeight: 700, fontSize: 15 }}>{broker.name}</div>
+        <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 15 }}>{broker.name}</div>
         <span style={{
           background: '#2979FF15',
           color: '#2979FF',
@@ -328,14 +328,14 @@ const BrokerCard: React.FC<{
 const MiniDetail: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div>
     <div style={{ color: '#555', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-    <div style={{ color: '#B0B0B0', fontSize: 12, fontWeight: 600, fontFamily: 'monospace' }}>{value}</div>
+    <div style={{ color: 'var(--text-dim)', fontSize: 12, fontWeight: 600, fontFamily: 'monospace' }}>{value}</div>
   </div>
 );
 
 const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #2A2A2A' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
     <span style={{ color: '#666', fontSize: 12 }}>{label}</span>
-    <span style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{value}</span>
+    <span style={{ color: 'var(--text)', fontSize: 13, fontWeight: 600, fontFamily: 'monospace' }}>{value}</span>
   </div>
 );
 
@@ -352,9 +352,9 @@ const primaryBtn: React.CSSProperties = {
 
 const ghostBtn: React.CSSProperties = {
   background: 'transparent',
-  border: '1px solid #3A3A3A',
+  border: '1px solid var(--border-2)',
   borderRadius: 8,
-  color: '#B0B0B0',
+  color: 'var(--text-dim)',
   cursor: 'pointer',
   padding: '8px 16px',
   fontSize: 13,

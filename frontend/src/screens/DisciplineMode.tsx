@@ -56,7 +56,7 @@ const DisciplineMode: React.FC = () => {
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#B0B0B0' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-dim)' }}>
       <p>Loading...</p>
     </div>
   );
@@ -80,10 +80,10 @@ const DisciplineMode: React.FC = () => {
   const canTrade = !shouldStop;
 
   const inputStyle: React.CSSProperties = {
-    background: '#121212',
-    border: '1px solid #3A3A3A',
+    background: 'var(--bg)',
+    border: '1px solid var(--border-2)',
     borderRadius: 8,
-    color: '#FFFFFF',
+    color: 'var(--text)',
     fontSize: 14,
     padding: '10px 12px',
     width: '100%',
@@ -92,7 +92,7 @@ const DisciplineMode: React.FC = () => {
   };
 
   const labelStyle: React.CSSProperties = {
-    color: '#B0B0B0',
+    color: 'var(--text-dim)',
     fontSize: 12,
     fontWeight: 500,
     marginBottom: 6,
@@ -104,7 +104,7 @@ const DisciplineMode: React.FC = () => {
   return (
     <div style={{ padding: 24, maxWidth: 900 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ color: '#FFFFFF', fontSize: 24, fontWeight: 700, margin: 0 }}>Discipline Mode</h1>
+        <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 700, margin: 0 }}>Discipline Mode</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>Automated trading limits and discipline enforcement</p>
       </div>
 
@@ -114,7 +114,7 @@ const DisciplineMode: React.FC = () => {
         padding: '32px 40px',
         marginBottom: 24,
         textAlign: 'center',
-        background: shouldStop ? '#FF174415' : canTrade ? '#00C85315' : '#1E1E1E',
+        background: shouldStop ? '#FF174415' : canTrade ? '#00C85315' : 'var(--surface)',
         border: `2px solid ${shouldStop ? '#FF1744' : '#00C853'}`,
         transition: 'all 0.3s',
       }}>
@@ -134,7 +134,7 @@ const DisciplineMode: React.FC = () => {
             ? 'DISCIPLINE MODE DISABLED'
             : 'CLEAR TO TRADE'}
         </div>
-        <div style={{ color: '#B0B0B0', fontSize: 14 }}>
+        <div style={{ color: 'var(--text-dim)', fontSize: 14 }}>
           {shouldStop && targetHit && 'Daily profit target has been reached.'}
           {shouldStop && lossLimitHit && 'Daily loss limit has been hit.'}
           {shouldStop && tradesMax && !lossLimitHit && !targetHit && 'Maximum daily trades used.'}
@@ -145,8 +145,8 @@ const DisciplineMode: React.FC = () => {
       </div>
 
       {/* Lock Conditions */}
-      <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 20, border: '1px solid #2A2A2A', marginBottom: 24 }}>
-        <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Lock Conditions</h2>
+      <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 20, border: '1px solid var(--border)', marginBottom: 24 }}>
+        <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Lock Conditions</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
           <ConditionCard
             label="Daily Profit Target"
@@ -185,22 +185,22 @@ const DisciplineMode: React.FC = () => {
 
       {/* Today's Stats */}
       {daily && (
-        <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 20, border: '1px solid #2A2A2A', marginBottom: 24 }}>
-          <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Today's Activity</h2>
+        <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 20, border: '1px solid var(--border)', marginBottom: 24 }}>
+          <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>Today's Activity</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
             <MiniStat label="Total PnL" value={`${pnl >= 0 ? '+' : ''}${formatCurrency(pnl)}`} color={pnl >= 0 ? '#00C853' : '#FF1744'} />
-            <MiniStat label="Trades Today" value={`${trades}/${maxTrades}`} color={tradesMax ? '#FF1744' : '#FFFFFF'} />
+            <MiniStat label="Trades Today" value={`${trades}/${maxTrades}`} color={tradesMax ? '#FF1744' : 'var(--text)'} />
             <MiniStat label="Today Wins" value={String(daily.wins)} color="#00C853" />
             <MiniStat label="Today Losses" value={String(daily.losses)} color="#FF1744" />
-            <MiniStat label="Consec. Losses" value={String(consecLosses)} color={consecLossMax ? '#FF1744' : '#FFFFFF'} />
+            <MiniStat label="Consec. Losses" value={String(consecLosses)} color={consecLossMax ? '#FF1744' : 'var(--text)'} />
           </div>
         </div>
       )}
 
       {/* Settings */}
-      <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 20, border: '1px solid #2A2A2A' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 20, border: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: 0 }}>Risk Profile Settings</h2>
+          <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: 0 }}>Risk Profile Settings</h2>
           <div style={{ display: 'flex', gap: 8 }}>
             {saveMsg && <span style={{ color: '#00C853', fontSize: 13, alignSelf: 'center' }}>{saveMsg}</span>}
             {editMode ? (
@@ -272,15 +272,15 @@ const ConditionCard: React.FC<{
   const color = triggered ? '#FF1744' : progress > 75 ? '#FFD600' : '#00C853';
 
   return (
-    <div style={{ background: '#121212', borderRadius: 10, padding: 14, border: `1px solid ${triggered ? '#FF174440' : '#2A2A2A'}` }}>
-      <div style={{ color: '#B0B0B0', fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
+    <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 14, border: `1px solid ${triggered ? '#FF174440' : 'var(--border)'}` }}>
+      <div style={{ color: 'var(--text-dim)', fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
         <span style={{ color, fontWeight: 700, fontFamily: 'monospace', fontSize: 18 }}>
           {unit}{current.toFixed(2)}
         </span>
         <span style={{ color: '#555', fontSize: 12 }}>/ {unit}{target}</span>
       </div>
-      <div style={{ background: '#2A2A2A', borderRadius: 4, height: 5, overflow: 'hidden', marginBottom: 6 }}>
+      <div style={{ background: 'var(--border)', borderRadius: 4, height: 5, overflow: 'hidden', marginBottom: 6 }}>
         <div style={{ background: color, height: '100%', width: `${progress}%`, borderRadius: 4, transition: 'width 0.4s ease' }} />
       </div>
       {triggered && (
@@ -291,14 +291,14 @@ const ConditionCard: React.FC<{
 };
 
 const MiniStat: React.FC<{ label: string; value: string; color: string }> = ({ label, value, color }) => (
-  <div style={{ background: '#121212', borderRadius: 8, padding: '10px 14px' }}>
+  <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 14px' }}>
     <div style={{ color: '#666', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
     <div style={{ color, fontWeight: 700, fontSize: 18, fontFamily: 'monospace' }}>{value}</div>
   </div>
 );
 
-const SettingDisplay: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = '#FFFFFF' }) => (
-  <div style={{ background: '#121212', borderRadius: 8, padding: '10px 14px' }}>
+const SettingDisplay: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = 'var(--text)' }) => (
+  <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 14px' }}>
     <div style={{ color: '#666', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
     <div style={{ color, fontWeight: 700, fontSize: 16, fontFamily: 'monospace' }}>{value}</div>
   </div>
@@ -324,9 +324,9 @@ const primaryBtn: React.CSSProperties = {
 
 const ghostBtn: React.CSSProperties = {
   background: 'transparent',
-  border: '1px solid #3A3A3A',
+  border: '1px solid var(--border-2)',
   borderRadius: 8,
-  color: '#B0B0B0',
+  color: 'var(--text-dim)',
   cursor: 'pointer',
   padding: '8px 18px',
   fontSize: 13,

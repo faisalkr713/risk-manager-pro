@@ -100,10 +100,10 @@ const AssetManager: React.FC = () => {
   );
 
   const inputStyle: React.CSSProperties = {
-    background: '#121212',
-    border: '1px solid #3A3A3A',
+    background: 'var(--bg)',
+    border: '1px solid var(--border-2)',
     borderRadius: 8,
-    color: '#FFFFFF',
+    color: 'var(--text)',
     fontSize: 13,
     padding: '8px 10px',
     width: '100%',
@@ -112,7 +112,7 @@ const AssetManager: React.FC = () => {
   };
 
   const labelStyle: React.CSSProperties = {
-    color: '#B0B0B0',
+    color: 'var(--text-dim)',
     fontSize: 11,
     fontWeight: 500,
     marginBottom: 4,
@@ -136,7 +136,7 @@ const AssetManager: React.FC = () => {
     <div style={{ padding: 24, maxWidth: 1100 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h1 style={{ color: '#FFFFFF', fontSize: 24, fontWeight: 700, margin: 0 }}>Asset Manager</h1>
+          <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 700, margin: 0 }}>Asset Manager</h1>
           <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>Create and manage custom trading instruments</p>
         </div>
         <button
@@ -150,8 +150,8 @@ const AssetManager: React.FC = () => {
       {/* Modal */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#1E1E1E', borderRadius: 16, padding: 24, width: '100%', maxWidth: 580, border: '1px solid #3A3A3A' }}>
-            <h2 style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 700, margin: '0 0 20px' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 580, border: '1px solid var(--border-2)' }}>
+            <h2 style={{ color: 'var(--text)', fontSize: 18, fontWeight: 700, margin: '0 0 20px' }}>
               {editId !== null ? 'Edit Asset' : 'Add Custom Asset'}
             </h2>
             <form onSubmit={handleSubmit}>
@@ -214,10 +214,10 @@ const AssetManager: React.FC = () => {
           onChange={e => setSearch(e.target.value)}
           placeholder="Search symbols or asset types..."
           style={{
-            background: '#1E1E1E',
-            border: '1px solid #3A3A3A',
+            background: 'var(--surface)',
+            border: '1px solid var(--border-2)',
             borderRadius: 8,
-            color: '#FFFFFF',
+            color: 'var(--text)',
             fontSize: 14,
             padding: '10px 14px',
             width: '100%',
@@ -229,18 +229,18 @@ const AssetManager: React.FC = () => {
       </div>
 
       {loading ? (
-        <p style={{ color: '#B0B0B0' }}>Loading...</p>
+        <p style={{ color: 'var(--text-dim)' }}>Loading...</p>
       ) : filtered.length === 0 ? (
-        <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 60, border: '1px dashed #2A2A2A', textAlign: 'center', color: '#555' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 60, border: '1px dashed #2A2A2A', textAlign: 'center', color: '#555' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>💎</div>
           <p>{search ? 'No assets match your search.' : 'No custom assets yet. Add your first instrument!'}</p>
         </div>
       ) : (
-        <div style={{ background: '#1E1E1E', borderRadius: 12, border: '1px solid #2A2A2A', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#252525', borderBottom: '1px solid #2A2A2A' }}>
+                <tr style={{ background: 'var(--surface-hover)', borderBottom: '1px solid var(--border)' }}>
                   {['Symbol', 'Type', 'Contract Size', 'Tick Size', 'Tick Value', 'Currency', 'Leverage', ''].map(h => (
                     <th key={h} style={{ color: '#666', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '10px 14px', textAlign: 'left' }}>{h}</th>
                   ))}
@@ -251,10 +251,10 @@ const AssetManager: React.FC = () => {
                   <tr
                     key={asset.id}
                     style={{ borderBottom: '1px solid #252525', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#252525')}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-hover)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
-                    <td style={{ ...tdStyle, fontWeight: 700, color: '#FFFFFF', fontSize: 15 }}>{asset.symbol}</td>
+                    <td style={{ ...tdStyle, fontWeight: 700, color: 'var(--text)', fontSize: 15 }}>{asset.symbol}</td>
                     <td style={tdStyle}>
                       <span style={{
                         background: `${typeColors[asset.asset_type] ?? '#2979FF'}20`,
@@ -281,7 +281,7 @@ const AssetManager: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: '10px 14px', borderTop: '1px solid #2A2A2A', color: '#555', fontSize: 12 }}>
+          <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)', color: '#555', fontSize: 12 }}>
             {filtered.length} asset{filtered.length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -290,9 +290,9 @@ const AssetManager: React.FC = () => {
   );
 };
 
-const tdStyle: React.CSSProperties = { padding: '10px 14px', color: '#B0B0B0', fontSize: 13 };
+const tdStyle: React.CSSProperties = { padding: '10px 14px', color: 'var(--text-dim)', fontSize: 13 };
 const iconBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', fontSize: 14, borderRadius: 4 };
 const primaryBtn: React.CSSProperties = { background: '#2979FF', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '10px 20px', fontSize: 14, fontWeight: 700 };
-const ghostBtn: React.CSSProperties = { background: 'transparent', border: '1px solid #3A3A3A', borderRadius: 8, color: '#B0B0B0', cursor: 'pointer', padding: '8px 16px', fontSize: 13, fontWeight: 600 };
+const ghostBtn: React.CSSProperties = { background: 'transparent', border: '1px solid var(--border-2)', borderRadius: 8, color: 'var(--text-dim)', cursor: 'pointer', padding: '8px 16px', fontSize: 13, fontWeight: 600 };
 
 export default AssetManager;

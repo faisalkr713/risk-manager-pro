@@ -848,8 +848,16 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .auth-link:hover { color: #60a5fa; }
 
 /* ── Theme variables (referenced by inline styles) ──────────────────── */
-:root { --surface-2: #2A2A2A; --text-dim: #888; }
-[data-theme="light"] { --surface-2: #eef1f5; --text-dim: #5a6472; }
+:root {
+  --surface-2: #2A2A2A; --text-dim: #888;
+  --bg: #121212; --surface: #1E1E1E; --surface-hover: #252525;
+  --border: #2A2A2A; --border-2: #3A3A3A; --text: #FFFFFF;
+}
+[data-theme="light"] {
+  --surface-2: #eef1f5; --text-dim: #5a6472;
+  --bg: #f4f6f9; --surface: #ffffff; --surface-hover: #eef1f5;
+  --border: #e2e6ec; --border-2: #dfe3ea; --text: #1a1d21;
+}
 
 .boot-screen { background: #0D0D0D; }
 

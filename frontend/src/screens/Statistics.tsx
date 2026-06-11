@@ -15,19 +15,19 @@ const Statistics: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding: 24, color: '#B0B0B0' }}>Loading...</div>;
+  if (loading) return <div style={{ padding: 24, color: 'var(--text-dim)' }}>Loading...</div>;
   if (error) return <div style={{ padding: 24, color: '#FF1744' }}>Error: {error}</div>;
   if (!stats) return null;
 
   return (
     <div style={{ padding: 24, maxWidth: 1100 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ color: '#FFFFFF', fontSize: 24, fontWeight: 700, margin: 0 }}>Statistics</h1>
+        <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 700, margin: 0 }}>Statistics</h1>
         <p style={{ color: '#666', fontSize: 13, margin: '4px 0 0' }}>All-time trading performance analysis</p>
       </div>
 
       {stats.total === 0 ? (
-        <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 60, border: '1px solid #2A2A2A', textAlign: 'center', color: '#666' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 60, border: '1px solid var(--border)', textAlign: 'center', color: '#666' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
           <p>No trades yet. Add trades in the Trade Journal to see statistics.</p>
         </div>
@@ -57,8 +57,8 @@ const Statistics: React.FC = () => {
 
           {/* Monthly Performance Chart */}
           {stats.monthly.length > 0 && (
-            <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 24, border: '1px solid #2A2A2A' }}>
-              <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Monthly Performance</h2>
+            <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 24, border: '1px solid var(--border)' }}>
+              <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Monthly Performance</h2>
               <MonthlyBarChart data={stats.monthly} />
             </div>
           )}
@@ -68,8 +68,8 @@ const Statistics: React.FC = () => {
   );
 };
 
-const KpiCard: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = '#FFFFFF' }) => (
-  <div style={{ background: '#1E1E1E', borderRadius: 10, padding: '14px 16px', border: '1px solid #2A2A2A' }}>
+const KpiCard: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = 'var(--text)' }) => (
+  <div style={{ background: 'var(--surface)', borderRadius: 10, padding: '14px 16px', border: '1px solid var(--border)' }}>
     <div style={{ color: '#666', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>
     <div style={{ color, fontSize: 20, fontWeight: 700, fontFamily: 'monospace' }}>{value}</div>
   </div>
@@ -102,8 +102,8 @@ const WinLossDonut: React.FC<{ wins: number; losses: number; bes: number }> = ({
   });
 
   return (
-    <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 24, border: '1px solid #2A2A2A' }}>
-      <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Trade Distribution</h2>
+    <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 24, border: '1px solid var(--border)' }}>
+      <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>Trade Distribution</h2>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
         <svg width={160} height={160} viewBox="0 0 160 160">
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="#2A2A2A" strokeWidth={strokeWidth} />
@@ -132,7 +132,7 @@ const WinLossDonut: React.FC<{ wins: number; losses: number; bes: number }> = ({
             <div key={seg.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 12, height: 12, borderRadius: 2, background: seg.color, flexShrink: 0 }} />
               <div>
-                <div style={{ color: '#FFFFFF', fontWeight: 600, fontSize: 14 }}>{seg.count} {seg.label}</div>
+                <div style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>{seg.count} {seg.label}</div>
                 <div style={{ color: '#666', fontSize: 11 }}>{seg.pct.toFixed(1)}%</div>
               </div>
             </div>
@@ -144,8 +144,8 @@ const WinLossDonut: React.FC<{ wins: number; losses: number; bes: number }> = ({
 };
 
 const PnlSummaryCard: React.FC<{ stats: StatsType }> = ({ stats }) => (
-  <div style={{ background: '#1E1E1E', borderRadius: 12, padding: 24, border: '1px solid #2A2A2A' }}>
-    <h2 style={{ color: '#FFFFFF', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>PnL Summary</h2>
+  <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 24, border: '1px solid var(--border)' }}>
+    <h2 style={{ color: 'var(--text)', fontSize: 16, fontWeight: 600, margin: '0 0 20px' }}>PnL Summary</h2>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <PnlRow label="Total Profit" value={`+${formatCurrency(stats.totalProfit)}`} color="#00C853" barPct={100} barColor="#00C853" />
       <PnlRow
@@ -155,9 +155,9 @@ const PnlSummaryCard: React.FC<{ stats: StatsType }> = ({ stats }) => (
         barPct={stats.totalProfit > 0 ? (stats.totalLoss / stats.totalProfit) * 100 : 100}
         barColor="#FF1744"
       />
-      <div style={{ borderTop: '1px solid #2A2A2A', paddingTop: 14 }}>
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: '#B0B0B0', fontSize: 14 }}>Net PnL</span>
+          <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>Net PnL</span>
           <span style={{ color: stats.netPnl >= 0 ? '#00C853' : '#FF1744', fontWeight: 700, fontSize: 20, fontFamily: 'monospace' }}>
             {stats.netPnl >= 0 ? '+' : ''}{formatCurrency(stats.netPnl)}
           </span>
@@ -175,10 +175,10 @@ const PnlSummaryCard: React.FC<{ stats: StatsType }> = ({ stats }) => (
 const PnlRow: React.FC<{ label: string; value: string; color: string; barPct: number; barColor: string }> = ({ label, value, color, barPct, barColor }) => (
   <div>
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-      <span style={{ color: '#B0B0B0', fontSize: 13 }}>{label}</span>
+      <span style={{ color: 'var(--text-dim)', fontSize: 13 }}>{label}</span>
       <span style={{ color, fontWeight: 700, fontFamily: 'monospace' }}>{value}</span>
     </div>
-    <div style={{ background: '#2A2A2A', borderRadius: 4, height: 5 }}>
+    <div style={{ background: 'var(--border)', borderRadius: 4, height: 5 }}>
       <div style={{ background: barColor, height: '100%', width: `${Math.min(100, barPct)}%`, borderRadius: 4 }} />
     </div>
   </div>
