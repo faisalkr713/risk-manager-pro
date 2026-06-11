@@ -75,15 +75,16 @@ function analyse(sym: string, k: { h: number[]; l: number[]; c: number[] }): Raw
   const aboveStop = price > stop;
   const nLoss = KEY * atrArr[n];
 
-  // Direction requires MACD and UT Bot agreement
-  let direction: 'BUY' | 'SELL';
-  if (hist > 0 && aboveStop) direction = 'BUY';
-  else if (hist < 0 && !aboveStop) direction = 'SELL';
-  else return null; // no clean signal
+  // Always produce a signal. Direction = MACD + UT Bot vote; agreement boosts confidence.
+  const macdBuy = hist > 0;
+  const agree = macdBuy === aboveStop;
+  const direction: 'BUY' | 'SELL' = agree ? (macdBuy ? 'BUY' : 'SELL') : (macdBuy ? 'BUY' : 'SELL');
 
   const histStrength = Math.abs(hist) / price;          // normalized momentum
-  const strength = histStrength * 1000 + (aboveStop === (direction === 'BUY') ? 1 : 0);
-  const winChance = Math.min(85, Math.max(55, Math.round(58 + histStrength * 6000)));
+  const strength = histStrength * 1000 + (agree ? 1 : 0);
+  // Higher confidence when MACD and UT Bot agree, lower when they conflict
+  const base = agree ? 64 : 52;
+  const winChance = Math.min(85, Math.max(50, Math.round(base + histStrength * 5000)));
 
   return { market: sym, direction, entry: price, atr: nLoss, winChance, strength };
 }
