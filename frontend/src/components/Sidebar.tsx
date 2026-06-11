@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {!collapsed && (
         <div className="sidebar-logo">
           <span style={{ fontSize: 18 }}>⬡</span>
-          <span>Risk Manager Pro</span>
+          <span>Trade Calculate</span>
         </div>
       )}
       <button className="sidebar-toggle" onClick={onToggle} title={collapsed ? 'Expand' : 'Collapse'}>

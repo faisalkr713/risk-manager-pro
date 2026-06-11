@@ -49,7 +49,7 @@ async function start() {
   await initDb();
   startPriceService();
   app.listen(PORT, () => {
-    console.log(`Risk Manager Pro backend running on port ${PORT}`);
+    console.log(`Trade Calculate backend running on port ${PORT}`);
   });
 }
 

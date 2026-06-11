@@ -199,7 +199,7 @@ const Dashboard: React.FC = () => {
       {/* ── header ────────────────────────────────────────────────────────── */}
       <div className="db-header">
         <div>
-          <h1 className="db-title">Risk Manager Pro</h1>
+          <h1 className="db-title">Trade Calculate</h1>
           <p className="db-subtitle">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
         <button className="db-btn-refresh" onClick={load}>↻ Refresh</button>

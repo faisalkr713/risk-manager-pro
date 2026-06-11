@@ -100,7 +100,7 @@ const Upgrade: React.FC = () => {
           <div style={{ fontSize: 28, marginBottom: 8 }}>☕</div>
           <h3 style={{ color: 'var(--text)', margin: '0 0 8px', fontSize: 20, fontWeight: 700 }}>Buy Me a Coffee</h3>
           <p style={{ color: '#888', margin: '0 0 16px', fontSize: 14, lineHeight: 1.6 }}>
-            Enjoying Risk Manager Pro? A small donation keeps the app running and helps add new features. Every coffee counts!
+            Enjoying Trade Calculate? A small donation keeps the app running and helps add new features. Every coffee counts!
           </p>
           <a href={donationUrl || '#'} target="_blank" rel="noreferrer" style={{ ...coffeeBtn, textDecoration: 'none', display: 'inline-block' }}>
             ☕ Buy Me a Coffee — $5

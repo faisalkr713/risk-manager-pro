@@ -69,7 +69,7 @@ const AuthModal: React.FC<Props> = ({ initialMode = 'signup', onAuth, onClose, o
 
         <div className="auth-logo">
           <div className="auth-logo-icon">⬡</div>
-          <div className="auth-logo-text">Risk Manager Pro</div>
+          <div className="auth-logo-text">Trade Calculate</div>
         </div>
         <p className="auth-tagline">
           {mode === 'signup'

@@ -203,7 +203,7 @@ const App: React.FC = () => {
               <div style={{ fontSize: 48, marginBottom: 12 }}>☕</div>
               <h2>You closed a winning trade! 🎉</h2>
               <p>
-                If Risk Manager Pro helped you stay disciplined and your trading is in profit,
+                If Trade Calculate helped you stay disciplined and your trading is in profit,
                 consider buying me a coffee. Best wishes on your journey! 🙏
               </p>
               <a
