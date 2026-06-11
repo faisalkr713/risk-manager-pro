@@ -35,18 +35,19 @@ const Signals: React.FC = () => {
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
-    // Up to 3 tries with backoff — transparently rides out free-tier cold starts.
+    // Up to 6 tries with backoff (~45s total) — transparently rides out free-tier cold starts.
+    const waits = [3000, 5000, 7000, 9000, 11000];
     let lastErr: Error | null = null;
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < waits.length + 1; i++) {
       try {
         setData(await attempt());
         setLoading(false);
         return;
       } catch (e) {
         lastErr = e as Error;
-        if (i < 2) {
-          setErr(`Server waking up… retrying (${i + 1}/2)`);
-          await new Promise(r => setTimeout(r, 6000));
+        if (i < waits.length) {
+          setErr(`Server waking up… retrying (${i + 1}/${waits.length})`);
+          await new Promise(r => setTimeout(r, waits[i]));
         }
       }
     }

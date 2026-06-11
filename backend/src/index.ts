@@ -46,6 +46,16 @@ if (isProd) {
   });
 }
 
+// Keep the free-tier instance awake by pinging itself before the 15-min idle window.
+function startKeepAlive() {
+  const url = process.env.RENDER_EXTERNAL_URL;
+  if (!url) return;
+  setInterval(() => {
+    fetch(`${url}/api/health`).catch(() => { /* ignore */ });
+  }, 12 * 60 * 1000); // every 12 minutes
+  console.log(`Keep-alive enabled → ${url}/api/health every 12 min`);
+}
+
 async function start() {
   console.log(`NODE_ENV=${process.env.NODE_ENV}, PORT=${PORT}`);
   console.log(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
@@ -54,6 +64,7 @@ async function start() {
   startSignalService();
   app.listen(PORT, () => {
     console.log(`Trade Calculate backend running on port ${PORT}`);
+    startKeepAlive();
   });
 }
 
