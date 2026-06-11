@@ -13,11 +13,20 @@ const Signals: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
+  const fetchSignals = async (token: string | null) =>
+    fetch(`${API_BASE}/signals`, { headers: { Authorization: `Bearer ${token}` } });
+
   const load = useCallback(async () => {
     setLoading(true); setErr('');
-    const token = localStorage.getItem('rmp_token');
     try {
-      const res = await fetch(`${API_BASE}/signals`, { headers: { Authorization: `Bearer ${token}` } });
+      let res = await fetchSignals(localStorage.getItem('rmp_token'));
+      // Stale/expired token → start a fresh guest session and retry once
+      if (res.status === 401) {
+        const g = await fetch(`${API_BASE}/auth/guest`, { method: 'POST' });
+        const gd = await g.json();
+        localStorage.setItem('rmp_token', gd.token);
+        res = await fetchSignals(gd.token);
+      }
       if (!res.ok) throw new Error();
       setData(await res.json());
     } catch {
