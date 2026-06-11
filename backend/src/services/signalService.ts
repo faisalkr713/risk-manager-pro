@@ -39,7 +39,7 @@ function atr(highs: number[], lows: number[], closes: number[], period: number):
 
 async function fetchKlines(sym: string): Promise<{ h: number[]; l: number[]; c: number[] } | null> {
   try {
-    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${TF}&limit=200`, {
+    const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${TF}&limit=200`, {
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
