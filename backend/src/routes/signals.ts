@@ -26,8 +26,9 @@ router.get('/', async (req: Request, res: Response) => {
       const stopDist = sig.atr;                      // price units
       const tpDist   = stopDist * rr;
       const size     = stopDist > 0 ? riskPer / stopDist : 0; // units
-      const sl = sig.direction === 'BUY' ? sig.entry - stopDist : sig.entry + stopDist;
-      const tp = sig.direction === 'BUY' ? sig.entry + tpDist   : sig.entry - tpDist;
+      const sl  = sig.direction === 'BUY' ? sig.entry - stopDist : sig.entry + stopDist;
+      const tp1 = sig.direction === 'BUY' ? sig.entry + tpDist        : sig.entry - tpDist;
+      const tp2 = sig.direction === 'BUY' ? sig.entry + tpDist * 1.75 : sig.entry - tpDist * 1.75;
       const dp = sig.entry < 10 ? 4 : 2;
       return {
         market: sig.market,
@@ -35,13 +36,15 @@ router.get('/', async (req: Request, res: Response) => {
         winChance: sig.winChance,
         entry: +sig.entry.toFixed(dp),        // entry price
         stopLoss: +sl.toFixed(dp),            // exit price if stopped
-        takeProfit: +tp.toFixed(dp),          // exit price if target hit
+        takeProfit: +tp1.toFixed(dp),         // TP1
+        takeProfit2: +tp2.toFixed(dp),        // TP2 (stretch)
         positionSize: +size.toFixed(4),       // units
-        profitPerTrade: +targetPer.toFixed(2),// profit if TP hit
+        profitPerTrade: +targetPer.toFixed(2),// profit if TP1 hit
         lossPerTrade: +riskPer.toFixed(2),    // loss if SL hit
         riskAmount: +riskPer.toFixed(2),
         targetAmount: +targetPer.toFixed(2),
         rr: +rr.toFixed(2),
+        spark: sig.spark.map(v => +v.toFixed(dp)),
       };
     });
 

@@ -31,6 +31,7 @@ export interface RawSignal {
   atr: number;          // price-unit stop distance basis
   winChance: number;    // %
   strength: number;     // ranking metric
+  spark: number[];      // recent closes for the mini chart
 }
 
 let cache: { windowStart: number; signals: RawSignal[] } = { windowStart: 0, signals: [] };
@@ -104,7 +105,7 @@ function analyse(sym: string, k: { h: number[]; l: number[]; c: number[] }): Raw
   const base = agree ? 64 : 52;
   const winChance = Math.min(85, Math.max(50, Math.round(base + histStrength * 5000)));
 
-  return { market: sym, direction, entry: price, atr: nLoss, winChance, strength };
+  return { market: sym, direction, entry: price, atr: nLoss, winChance, strength, spark: c.slice(-24) };
 }
 
 export async function refreshSignals(windowStart: number): Promise<void> {
