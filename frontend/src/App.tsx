@@ -10,6 +10,7 @@ import Statistics from './screens/Statistics';
 import BrokerProfiles from './screens/BrokerProfiles';
 import AssetManager from './screens/AssetManager';
 import ScreenshotAnalyzer from './screens/ScreenshotAnalyzer';
+import Signals from './screens/Signals';
 import Upgrade from './screens/Upgrade';
 import { Screen } from './types';
 import { NAV_ITEMS, API_BASE } from './constants';
@@ -40,6 +41,7 @@ const renderScreen = (s: Screen, onUpgrade: () => void) => {
     case 'brokers':    return <BrokerProfiles />;
     case 'assets':     return <AssetManager />;
     case 'screenshot': return <ScreenshotAnalyzer onUpgrade={onUpgrade} />;
+    case 'signals':    return <Signals />;
     case 'upgrade':    return <Upgrade />;
     default:           return <Dashboard />;
   }
@@ -206,6 +208,13 @@ const App: React.FC = () => {
                 If Trade Calculate helped you stay disciplined and your trading is in profit,
                 consider buying me a coffee. Best wishes on your journey! 🙏
               </p>
+              {planData.status?.donationUrl && (
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(planData.status.donationUrl)}&size=150x150&margin=8`}
+                  alt="Buy me a coffee QR"
+                  style={{ width: 140, height: 140, borderRadius: 12, background: '#fff', padding: 4, margin: '0 auto 16px', display: 'block' }}
+                />
+              )}
               <a
                 href={planData.status?.donationUrl ?? '#'}
                 target="_blank"

@@ -7,6 +7,7 @@ export type Screen =
   | 'brokers'
   | 'assets'
   | 'screenshot'
+  | 'signals'
   | 'upgrade';
 
 export interface Trade {

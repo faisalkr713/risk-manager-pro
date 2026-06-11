@@ -9,8 +9,10 @@ import pricesRouter from './routes/prices';
 import authRouter from './routes/auth';
 import paymentsRouter from './routes/payments';
 import analyzeRouter from './routes/analyze';
+import signalsRouter from './routes/signals';
 import { initDb } from './database';
 import { startPriceService } from './services/priceService';
+import { startSignalService } from './services/signalService';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -29,6 +31,7 @@ app.use('/api/prices', pricesRouter);
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/payments', paymentsRouter);
 app.use('/api/analyze', analyzeRouter);
+app.use('/api/signals', signalsRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -48,6 +51,7 @@ async function start() {
   console.log(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
   await initDb();
   startPriceService();
+  startSignalService();
   app.listen(PORT, () => {
     console.log(`Trade Calculate backend running on port ${PORT}`);
   });
