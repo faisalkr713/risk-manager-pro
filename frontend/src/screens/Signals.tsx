@@ -13,83 +13,102 @@ const Signals: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
+    setLoading(true); setErr('');
     const token = localStorage.getItem('rmp_token');
-    setLoading(true);
-    fetch(`${API_BASE}/signals`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(setData).catch(() => setErr('Could not load signals')).finally(() => setLoading(false));
+    try {
+      const res = await fetch(`${API_BASE}/signals`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error();
+      setData(await res.json());
+    } catch {
+      setErr('Could not load signals. Please tap Refresh.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { load(); const t = setInterval(load, 5 * 60 * 1000); return () => clearInterval(t); }, [load]);
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 700, margin: 0 }}>🎯 AI Signals</h1>
-          <p style={{ color: '#888', fontSize: 13, margin: '4px 0 0' }}>
-            4 daily signals · MACD 35/65/14 + UT Bot on 30m candles · updates every 30 min · sized to your presets
-          </p>
-        </div>
-        <button onClick={load} className="primary-btn">↻ Refresh</button>
+    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 6 }}>
+        <h1 style={{ color: 'var(--text)', fontSize: 24, fontWeight: 800, margin: 0 }}>🎯 AI Signals</h1>
+        <button onClick={load} disabled={loading} className="primary-btn" style={{ opacity: loading ? 0.6 : 1 }}>
+          {loading ? 'Loading…' : '↻ Refresh'}
+        </button>
       </div>
-
+      <p style={{ color: '#888', fontSize: 12.5, margin: '0 0 4px', lineHeight: 1.5 }}>
+        MACD 35/65/14 + UT Bot on 30-minute candles · updates every 30 min · sized to your capital &amp; targets
+      </p>
       {data && (
-        <p style={{ color: '#666', fontSize: 12, marginBottom: 16 }}>
-          Capital ${data.capital.toLocaleString()} · Updated {new Date(data.generatedAt).toLocaleTimeString()} · Next {new Date(data.nextRefresh).toLocaleTimeString()}
+        <p style={{ color: '#666', fontSize: 11.5, margin: '0 0 18px' }}>
+          Capital ${data.capital.toLocaleString()} · Updated {new Date(data.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Next {new Date(data.nextRefresh).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       )}
 
-      {loading && !data && <p style={{ color: '#888' }}>Loading signals…</p>}
-      {err && <p style={{ color: '#FF1744' }}>{err}</p>}
-      {data && data.signals.length === 0 && (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 32, textAlign: 'center', color: '#888' }}>
-          No clean signals right now. Markets are choppy — check back after the next 30-min candle.
+      {err && (
+        <div style={{ background: 'var(--surface)', border: '1px solid #FF174440', borderRadius: 12, padding: 20, textAlign: 'center', marginTop: 12 }}>
+          <p style={{ color: '#FF1744', margin: '0 0 12px', fontSize: 14 }}>{err}</p>
+          <button onClick={load} className="primary-btn">Try Again</button>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+      {loading && !data && !err && <p style={{ color: '#888', marginTop: 16 }}>Scanning markets…</p>}
+
+      {/* Signal cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16, marginTop: 8 }}>
         {data?.signals.map((s, i) => {
           const buy = s.direction === 'BUY';
           const col = buy ? '#00C853' : '#FF1744';
           return (
-            <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `3px solid ${col}`, borderRadius: 12, padding: 18 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ color: 'var(--text)', fontSize: 16, fontWeight: 800 }}>{s.market}</span>
-                <span style={{ background: `${col}22`, color: col, fontSize: 12, fontWeight: 800, padding: '3px 10px', borderRadius: 20 }}>
+            <div key={i} style={{
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              borderTop: `3px solid ${col}`, borderRadius: 14, padding: 18,
+              boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <span style={{ color: 'var(--text)', fontSize: 17, fontWeight: 800 }}>{s.market.replace('USDT', '')}<span style={{ color: '#888', fontSize: 12, fontWeight: 600 }}>/USDT</span></span>
+                <span style={{ background: col, color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 11px', borderRadius: 20, letterSpacing: '0.03em' }}>
                   {buy ? '▲ BUY' : '▼ SELL'}
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
-                  <div style={{ width: `${s.winChance}%`, height: '100%', background: col }} />
+
+              {/* Win chance */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                  <span style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Win Chance</span>
+                  <span style={{ color: col, fontSize: 13, fontWeight: 800 }}>{s.winChance}%</span>
                 </div>
-                <span style={{ color: col, fontSize: 13, fontWeight: 800 }}>{s.winChance}%</span>
+                <div style={{ height: 7, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ width: `${s.winChance}%`, height: '100%', background: col, transition: 'width 0.3s' }} />
+                </div>
               </div>
+
               <Row label="Entry" value={s.entry} />
               <Row label="Stop Loss" value={s.stopLoss} color="#FF1744" />
               <Row label="Take Profit" value={s.takeProfit} color="#00C853" />
               <Row label="Size (units)" value={s.positionSize} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-                <span style={{ color: '#FF1744', fontSize: 12 }}>Risk ${s.riskAmount}</span>
-                <span style={{ color: '#888', fontSize: 12 }}>RR 1:{s.rr}</span>
-                <span style={{ color: '#00C853', fontSize: 12 }}>Target ${s.targetAmount}</span>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                <span style={{ color: '#FF1744', fontSize: 11.5, fontWeight: 600 }}>Risk ${s.riskAmount}</span>
+                <span style={{ background: 'var(--border)', color: 'var(--text)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6 }}>1:{s.rr}</span>
+                <span style={{ color: '#00C853', fontSize: 11.5, fontWeight: 600 }}>Target ${s.targetAmount}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      <p style={{ color: '#555', fontSize: 11, marginTop: 20 }}>
-        ⚠ Signals are algorithmic and educational only — not financial advice. Always manage your own risk.
+      <p style={{ color: '#555', fontSize: 11, marginTop: 22, lineHeight: 1.5 }}>
+        ⚠ Signals are algorithmic and for educational purposes only — not financial advice. Always manage your own risk.
       </p>
     </div>
   );
 };
 
 const Row: React.FC<{ label: string; value: number; color?: string }> = ({ label, value, color }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
     <span style={{ color: '#888', fontSize: 12 }}>{label}</span>
     <span style={{ color: color ?? 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'monospace' }}>{value}</span>
   </div>
