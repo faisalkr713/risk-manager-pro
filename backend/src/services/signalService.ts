@@ -3,8 +3,14 @@
 
 const MARKETS = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','BNBUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','LTCUSDT'];
 
-const FAST = 35, SLOW = 65, SIGNAL = 14, ATR_PERIOD = 10, KEY = 1, TF = '30m';
-const REFRESH_MS = 30 * 60 * 1000;
+const FAST = 35, SLOW = 65, SIGNAL = 14, ATR_PERIOD = 10, KEY = 1, TF = '15m';
+const WINDOW_MS = 15 * 60 * 1000;     // signals locked per aligned 15-min window
+const ENTRY_WINDOW_MS = 5 * 60 * 1000; // entries allowed only in first 5 min of the window
+
+// Start of the current aligned 15-minute window (wall-clock :00/:15/:30/:45)
+function currentWindowStart(now = Date.now()): number {
+  return Math.floor(now / WINDOW_MS) * WINDOW_MS;
+}
 
 export interface RawSignal {
   market: string;
@@ -15,7 +21,7 @@ export interface RawSignal {
   strength: number;     // ranking metric
 }
 
-let cache: { generatedAt: number; signals: RawSignal[] } = { generatedAt: 0, signals: [] };
+let cache: { windowStart: number; signals: RawSignal[] } = { windowStart: 0, signals: [] };
 
 function ema(values: number[], period: number): number[] {
   const k = 2 / (period + 1);
@@ -89,7 +95,7 @@ function analyse(sym: string, k: { h: number[]; l: number[]; c: number[] }): Raw
   return { market: sym, direction, entry: price, atr: nLoss, winChance, strength };
 }
 
-export async function refreshSignals(): Promise<void> {
+export async function refreshSignals(windowStart: number): Promise<void> {
   const results = await Promise.all(MARKETS.map(async m => {
     const k = await fetchKlines(m);
     return k ? analyse(m, k) : null;
@@ -97,19 +103,28 @@ export async function refreshSignals(): Promise<void> {
   const signals = results.filter((s): s is RawSignal => s !== null)
     .sort((a, b) => b.strength - a.strength)
     .slice(0, 4);
-  cache = { generatedAt: Date.now(), signals };
-  console.log(`AI signals refreshed: ${signals.length} signals`);
+  cache = { windowStart, signals };
+  console.log(`AI signals refreshed for window ${new Date(windowStart).toISOString()}: ${signals.length} signals`);
 }
 
-export async function getSignals(): Promise<{ generatedAt: number; nextRefresh: number; signals: RawSignal[] }> {
-  if (Date.now() - cache.generatedAt > REFRESH_MS || cache.signals.length === 0) {
-    await refreshSignals();
+export async function getSignals(): Promise<{
+  windowStart: number; nextRefresh: number; entryDeadline: number; signals: RawSignal[];
+}> {
+  const ws = currentWindowStart();
+  if (cache.windowStart !== ws || cache.signals.length === 0) {
+    await refreshSignals(ws);
   }
-  return { generatedAt: cache.generatedAt, nextRefresh: cache.generatedAt + REFRESH_MS, signals: cache.signals };
+  return {
+    windowStart: cache.windowStart,
+    nextRefresh: cache.windowStart + WINDOW_MS,
+    entryDeadline: cache.windowStart + ENTRY_WINDOW_MS,
+    signals: cache.signals,
+  };
 }
 
 export function startSignalService(): void {
-  refreshSignals();
-  setInterval(refreshSignals, REFRESH_MS);
-  console.log('AI signal service started (MACD 35/65/14 + UT Bot, 30m, refresh 30min)');
+  getSignals();
+  // Re-check every 30s so a new aligned window is generated promptly
+  setInterval(() => { getSignals().catch(() => {}); }, 30 * 1000);
+  console.log('AI signal service started (MACD 35/65/14 + UT Bot, 15m, locked per 15-min window)');
 }

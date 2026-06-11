@@ -17,7 +17,7 @@ router.get('/', async (req: Request, res: Response) => {
     const dayTarget = parseFloat(s.daily_target) || 200;
     const dayLoss   = parseFloat(s.daily_loss_limit) || 100;
 
-    const { generatedAt, nextRefresh, signals } = await getSignals();
+    const { windowStart, nextRefresh, entryDeadline, signals } = await getSignals();
     const riskPer   = dayLoss / 4;      // risk budget per signal
     const targetPer = dayTarget / 4;    // profit target per signal
     const rr = riskPer > 0 ? targetPer / riskPer : 2;
@@ -33,17 +33,19 @@ router.get('/', async (req: Request, res: Response) => {
         market: sig.market,
         direction: sig.direction,
         winChance: sig.winChance,
-        entry: +sig.entry.toFixed(dp),
-        stopLoss: +sl.toFixed(dp),
-        takeProfit: +tp.toFixed(dp),
-        positionSize: +size.toFixed(4),
+        entry: +sig.entry.toFixed(dp),        // entry price
+        stopLoss: +sl.toFixed(dp),            // exit price if stopped
+        takeProfit: +tp.toFixed(dp),          // exit price if target hit
+        positionSize: +size.toFixed(4),       // units
+        profitPerTrade: +targetPer.toFixed(2),// profit if TP hit
+        lossPerTrade: +riskPer.toFixed(2),    // loss if SL hit
         riskAmount: +riskPer.toFixed(2),
         targetAmount: +targetPer.toFixed(2),
         rr: +rr.toFixed(2),
       };
     });
 
-    res.json({ generatedAt, nextRefresh, capital, signals: out });
+    res.json({ generatedAt: windowStart, windowStart, nextRefresh, entryDeadline, capital, signals: out });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch signals' });
