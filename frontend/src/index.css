@@ -846,3 +846,167 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   font-size: 12px; padding: 0; text-decoration: underline;
 }
 .auth-link:hover { color: #60a5fa; }
+
+/* ── Theme variables (referenced by inline styles) ──────────────────── */
+:root { --surface-2: #2A2A2A; --text-dim: #888; }
+[data-theme="light"] { --surface-2: #eef1f5; --text-dim: #5a6472; }
+
+.boot-screen { background: #0D0D0D; }
+
+/* ── Modal overlay (auth + coffee popup) ────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; backdrop-filter: blur(2px);
+}
+.auth-modal { position: relative; max-width: 400px; }
+.modal-close {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; color: #666;
+  font-size: 16px; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { color: #fff; }
+.auth-guest-link {
+  display: block; width: 100%; text-align: center; margin-top: 16px;
+  background: none; border: none; color: #666; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+}
+.auth-guest-link:hover { color: #999; }
+
+/* ── Coffee popup ───────────────────────────────────────────────────── */
+.coffee-popup {
+  background: #1E1E1E; border: 1px solid #2A2A2A; border-radius: 20px;
+  padding: 32px; max-width: 400px; width: 90%; text-align: center;
+}
+.coffee-popup h2 { color: #fff; font-size: 22px; font-weight: 800; margin: 0 0 8px; }
+.coffee-popup p  { color: #888; font-size: 14px; line-height: 1.6; margin: 0 0 24px; }
+.coffee-popup-btn {
+  display: block; padding: 14px; background: #FFDD00; border-radius: 12px;
+  color: #333; font-weight: 800; font-size: 15px; text-decoration: none; margin-bottom: 12px;
+}
+.coffee-popup-dismiss { background: none; border: none; color: #888; cursor: pointer; font-size: 13px; }
+
+/* ── Coffee FAB (always visible) ────────────────────────────────────── */
+.coffee-fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 900;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #FFDD00, #FFB300);
+  color: #3a2e00; text-decoration: none;
+  padding: 10px 16px; border-radius: 30px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.coffee-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(255,179,0,0.5); }
+.coffee-fab-icon  { font-size: 22px; }
+.coffee-fab-text  { display: flex; flex-direction: column; line-height: 1.15; }
+.coffee-fab-title { font-size: 13px; font-weight: 800; }
+.coffee-fab-sub   { font-size: 10px; font-weight: 600; opacity: 0.8; }
+
+@media (max-width: 768px) {
+  .coffee-fab { bottom: 78px; right: 12px; padding: 9px 13px; }
+  .coffee-fab-sub { display: none; }
+}
+
+/* ── Sidebar theme toggle + guest profile ───────────────────────────── */
+.sidebar-theme { padding: 8px; border-top: 1px solid #1e1e1e; }
+.theme-toggle {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  background: transparent; border: none; border-radius: 8px;
+  color: #888; cursor: pointer; padding: 9px 10px;
+  font-size: 13px; font-weight: 500; transition: background 0.12s, color 0.12s;
+}
+.theme-toggle:hover { background: #1E1E1E; color: #ddd; }
+.theme-toggle .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+.nav-btn.nav-upgrade {
+  background: linear-gradient(90deg, rgba(41,121,255,0.12), rgba(156,39,176,0.12));
+  color: #2979FF; font-weight: 700;
+}
+
+.sp-guest { display: flex; flex-direction: column; gap: 6px; }
+.sp-guest-label { font-size: 11px; color: #888; font-weight: 600; }
+.sp-signup-btn {
+  background: #2979FF; border: none; border-radius: 8px; color: #fff;
+  padding: 9px; font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
+}
+.sp-signup-btn:hover { opacity: 0.9; }
+.sp-login-link { background: none; border: none; color: #888; font-size: 11px; cursor: pointer; }
+.sp-login-link:hover { color: #bbb; }
+
+/* ════════════════════════════════════════════════════════════════════ */
+/* ── LIGHT THEME OVERRIDES ──────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] html, [data-theme="light"] body { background: #f4f6f9; color: #1a1d21; }
+[data-theme="light"] .app-shell, [data-theme="light"] .boot-screen { background: #f4f6f9; }
+[data-theme="light"] ::-webkit-scrollbar-track { background: #eef1f5; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #c5ccd6; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #aeb6c2; }
+
+/* Sidebar */
+[data-theme="light"] .sidebar { background: #ffffff; border-right-color: #e2e6ec; }
+[data-theme="light"] .sidebar-header { border-bottom-color: #e2e6ec; }
+[data-theme="light"] .sidebar-logo span { color: #1a1d21; }
+[data-theme="light"] .sidebar-toggle { border-color: #dfe3ea; color: #8a94a3; }
+[data-theme="light"] .sidebar-toggle:hover { background: #eef1f5; color: #1a1d21; border-color: #c5ccd6; }
+[data-theme="light"] .nav-btn { color: #5a6472; }
+[data-theme="light"] .nav-btn:hover { background: #eef1f5; color: #1a1d21; }
+[data-theme="light"] .sidebar-profile, [data-theme="light"] .sidebar-theme { border-top-color: #e2e6ec; }
+[data-theme="light"] .theme-toggle { color: #5a6472; }
+[data-theme="light"] .theme-toggle:hover { background: #eef1f5; color: #1a1d21; }
+[data-theme="light"] .sp-name { color: #1a1d21; }
+[data-theme="light"] .sp-email, [data-theme="light"] .sp-guest-label, [data-theme="light"] .sp-login-link { color: #5a6472; }
+[data-theme="light"] .sp-logout { border-color: #dfe3ea; color: #8a94a3; }
+[data-theme="light"] .bottom-nav { background: #ffffff; border-top-color: #e2e6ec; }
+[data-theme="light"] .bottom-nav-btn { color: #8a94a3; }
+
+/* Dashboard */
+[data-theme="light"] .db-title, [data-theme="light"] .screen-title { color: #1a1d21; }
+[data-theme="light"] .db-summary-card, [data-theme="light"] .db-card, [data-theme="light"] .db-error-box { background: #ffffff; border-color: #e6e9ee; }
+[data-theme="light"] .db-summary-card:hover { border-color: #d4dae2; }
+[data-theme="light"] .db-wl-divider { background: #e2e6ec; }
+[data-theme="light"] .db-btn-refresh { background: #eef1f5; border-color: #dfe3ea; color: #5a6472; }
+[data-theme="light"] .db-btn-refresh:hover { color: #1a1d21; border-color: #c5ccd6; }
+[data-theme="light"] .db-section-title,
+[data-theme="light"] .db-sc-label,
+[data-theme="light"] .db-card-title,
+[data-theme="light"] .db-eq-label,
+[data-theme="light"] .db-at-label,
+[data-theme="light"] .db-wl-label,
+[data-theme="light"] .db-disc-label,
+[data-theme="light"] .db-hf-label { color: #6b7480; }
+
+/* Calculator */
+[data-theme="light"] .step-card, [data-theme="light"] .adv-card { background: #ffffff; border-color: #e6e9ee; }
+[data-theme="light"] .step-header { background: #f7f9fb; border-bottom-color: #e6e9ee; }
+[data-theme="light"] .step-title { color: #1a1d21; }
+[data-theme="light"] .search-input,
+[data-theme="light"] .price-input,
+[data-theme="light"] .mini-input,
+[data-theme="light"] .adv-input,
+[data-theme="light"] .adv-select { background: #f4f6f9; border-color: #dfe3ea; color: #1a1d21; }
+[data-theme="light"] .price-input::placeholder, [data-theme="light"] .search-input::placeholder { color: #aeb6c2; }
+[data-theme="light"] .mode-toggle { background: #eef1f5; border-color: #dfe3ea; }
+[data-theme="light"] .mode-btn { color: #5a6472; }
+[data-theme="light"] .pill { background: #eef1f5; border-color: #dfe3ea; color: #5a6472; }
+[data-theme="light"] .pill:hover { background: #e2e6ec; color: #1a1d21; }
+[data-theme="light"] .sym-btn { background: #f4f6f9; border-color: #e2e6ec; }
+[data-theme="light"] .sym-btn:hover { background: #eef1f5; }
+[data-theme="light"] .sym-name { color: #5a6472; }
+[data-theme="light"] .sym-price, [data-theme="light"] .live-value, [data-theme="light"] .result-value { color: #1a1d21; }
+[data-theme="light"] .live-price-bar { background: #ffffff; border-color: #e6e9ee; }
+[data-theme="light"] .result-tile { background: #f4f6f9; border-color: #e6e9ee; }
+[data-theme="light"] .dir-btn { background: #f4f6f9; border-color: #dfe3ea; color: #8a94a3; }
+[data-theme="light"] .adv-dropdown { background: #ffffff; border-color: #e2e6ec; }
+[data-theme="light"] .adv-drop-item { color: #1a1d21; }
+[data-theme="light"] .adv-section-title, [data-theme="light"] .input-label, [data-theme="light"] .result-label { color: #6b7480; }
+
+/* Auth + modals */
+[data-theme="light"] .auth-root { background: #f4f6f9; }
+[data-theme="light"] .auth-card, [data-theme="light"] .coffee-popup { background: #ffffff; border-color: #e6e9ee; }
+[data-theme="light"] .auth-logo-text, [data-theme="light"] .coffee-popup h2 { color: #1a1d21; }
+[data-theme="light"] .auth-tabs { background: #eef1f5; border-color: #dfe3ea; }
+[data-theme="light"] .auth-tab.active { background: #ffffff; color: #1a1d21; }
+[data-theme="light"] .auth-input { background: #f4f6f9; border-color: #dfe3ea; color: #1a1d21; }
+[data-theme="light"] .modal-close { color: #8a94a3; }
+[data-theme="light"] .modal-close:hover { color: #1a1d21; }

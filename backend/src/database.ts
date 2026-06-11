@@ -16,6 +16,7 @@ export async function initDb(): Promise<void> {
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL DEFAULT '',
       plan TEXT NOT NULL DEFAULT 'free',
+      is_guest BOOLEAN NOT NULL DEFAULT false,
       stripe_customer_id TEXT,
       stripe_subscription_id TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
@@ -24,6 +25,7 @@ export async function initDb(): Promise<void> {
 
   // Migrate existing users table (add columns if they don't exist)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free'`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_guest BOOLEAN NOT NULL DEFAULT false`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT`);
 

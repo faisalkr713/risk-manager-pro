@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Trade } from '../types';
 import { apiGet, apiPost, apiPut, apiDelete } from '../hooks/useApi';
 import { formatCurrency } from '../utils/calculations';
-import { notifyProfitableTrade } from '../App';
+import { notifyProfitableTrade, notifyTradeAdded } from '../App';
 
 interface TradeForm {
   date: string;
@@ -99,6 +99,7 @@ const Journal: React.FC<{ onUpgrade?: () => void }> = ({ onUpgrade }) => {
           if (onUpgrade) onUpgrade();
           return;
         }
+        notifyTradeAdded();
         // Show coffee popup on profitable WIN trade
         if (payload.result === 'WIN' && payload.profit_loss > 0) {
           notifyProfitableTrade();

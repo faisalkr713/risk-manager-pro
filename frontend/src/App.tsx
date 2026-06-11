@@ -1,5 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import Sidebar from './components/Sidebar';
+import AuthModal from './components/AuthModal';
+import CoffeeFab from './components/CoffeeFab';
 import Dashboard from './screens/Dashboard';
 import Calculator from './screens/Calculator';
 import DisciplineMode from './screens/DisciplineMode';
@@ -9,20 +11,23 @@ import BrokerProfiles from './screens/BrokerProfiles';
 import AssetManager from './screens/AssetManager';
 import ScreenshotAnalyzer from './screens/ScreenshotAnalyzer';
 import Upgrade from './screens/Upgrade';
-import Auth from './screens/Auth';
 import { Screen } from './types';
 import { NAV_ITEMS, API_BASE } from './constants';
-import { usePlan, PlanStatus } from './hooks/usePlan';
+import { usePlan } from './hooks/usePlan';
+import { useTheme } from './hooks/useTheme';
 
-interface AuthUser { id: number; email: string; name: string; created_at: string; }
+interface AuthUser { id: number; email: string; name: string; is_guest?: boolean; created_at: string; }
 
 // Plan context — any screen can read plan status
 export const PlanContext = createContext<ReturnType<typeof usePlan> | null>(null);
 export function usePlanContext() { return useContext(PlanContext)!; }
 
-// Global event: "profitable trade logged" → show coffee popup
+// Global events
 export function notifyProfitableTrade() {
   window.dispatchEvent(new CustomEvent('rmp:profitable_trade'));
+}
+export function notifyTradeAdded() {
+  window.dispatchEvent(new CustomEvent('rmp:trade_added'));
 }
 
 const renderScreen = (s: Screen, onUpgrade: () => void) => {
@@ -46,26 +51,69 @@ const App: React.FC = () => {
   const [user, setUser]           = useState<AuthUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [showCoffee, setShowCoffee]   = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode]   = useState<'login' | 'signup'>('signup');
   const planData = usePlan();
+  const { theme, toggle: toggleTheme } = useTheme();
 
+  // ── Session bootstrap: never block the app behind a login wall ──
   useEffect(() => {
-    const token = localStorage.getItem('rmp_token');
-    if (!token) { setAuthChecked(true); return; }
-    fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => { setUser(data.user); })
-      .catch(() => { localStorage.removeItem('rmp_token'); })
-      .finally(() => setAuthChecked(true));
+    let cancelled = false;
+    async function createGuest() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/guest`, { method: 'POST' });
+        const data = await res.json();
+        if (cancelled) return;
+        localStorage.setItem('rmp_token', data.token);
+        setUser(data.user);
+      } catch { /* offline — app still renders */ }
+    }
+    async function boot() {
+      const token = localStorage.getItem('rmp_token');
+      if (token) {
+        try {
+          const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) {
+            const data = await res.json();
+            if (!cancelled) setUser(data.user);
+          } else {
+            localStorage.removeItem('rmp_token');
+            await createGuest();
+          }
+        } catch { /* network */ }
+      } else {
+        await createGuest();
+      }
+      if (!cancelled) { setAuthChecked(true); planData.refresh(); }
+    }
+    boot();
+    return () => { cancelled = true; };
   }, []);
 
-  // Listen for profitable trade event → show coffee popup
+  // Coffee popup after a profitable trade
   useEffect(() => {
     const handler = () => setShowCoffee(true);
     window.addEventListener('rmp:profitable_trade', handler);
     return () => window.removeEventListener('rmp:profitable_trade', handler);
   }, []);
 
-  // Check URL params after Stripe redirect
+  // Refresh plan usage whenever a trade is added
+  useEffect(() => {
+    const handler = () => planData.refresh();
+    window.addEventListener('rmp:trade_added', handler);
+    return () => window.removeEventListener('rmp:trade_added', handler);
+  }, [planData]);
+
+  // Nudge guests to sign up after they've logged 3 trades
+  useEffect(() => {
+    if (!user?.is_guest || !planData.status) return;
+    if (planData.status.monthlyTrades >= 3 && !sessionStorage.getItem('rmp_nudge_dismissed') && !showAuthModal) {
+      setAuthMode('signup');
+      setShowAuthModal(true);
+    }
+  }, [planData.status?.monthlyTrades, user]);
+
+  // Handle Stripe redirect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('upgraded') === '1') {
@@ -78,20 +126,25 @@ const App: React.FC = () => {
   const handleAuth = (token: string, u: AuthUser) => {
     localStorage.setItem('rmp_token', token);
     setUser(u);
+    setShowAuthModal(false);
+    planData.refresh();
   };
 
   const handleLogout = () => {
     localStorage.removeItem('rmp_token');
-    setUser(null);
+    window.location.reload(); // fresh guest session
   };
 
+  const openAuth = (mode: 'login' | 'signup') => { setAuthMode(mode); setShowAuthModal(true); };
+  const continueGuest = () => { sessionStorage.setItem('rmp_nudge_dismissed', '1'); setShowAuthModal(false); };
+
   if (!authChecked) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0D0D0D' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }} className="boot-screen">
       <div style={{ width: 36, height: 36, border: '3px solid #1e1e1e', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 
-  if (!user) return <Auth onAuth={handleAuth} />;
+  const isGuest = !!user?.is_guest;
 
   return (
     <PlanContext.Provider value={planData}>
@@ -101,10 +154,14 @@ const App: React.FC = () => {
           onNavigate={setActive}
           collapsed={collapsed}
           onToggle={() => setCollapsed(c => !c)}
-          user={user}
+          user={user ?? { name: 'Guest', email: '' }}
+          isGuest={isGuest}
           onLogout={handleLogout}
+          onShowAuth={openAuth}
           isPro={planData.isPro}
           tradesLeft={planData.tradesLeft}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         <main className="main-content">
@@ -126,32 +183,38 @@ const App: React.FC = () => {
           </div>
         </nav>
 
-        {/* Buy Me a Coffee popup after profitable trade */}
+        {/* Always-visible Buy Me a Coffee */}
+        <CoffeeFab donationUrl={planData.status?.donationUrl ?? ''} />
+
+        {/* Auth modal (signup nudge / login) */}
+        {showAuthModal && (
+          <AuthModal
+            initialMode={authMode}
+            onAuth={handleAuth}
+            onClose={continueGuest}
+            onContinueGuest={continueGuest}
+          />
+        )}
+
+        {/* Coffee popup after a profitable trade */}
         {showCoffee && (
-          <div style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }} onClick={() => setShowCoffee(false)}>
-            <div onClick={e => e.stopPropagation()} style={{
-              background: '#1E1E1E', border: '1px solid #2A2A2A', borderRadius: 20,
-              padding: 32, maxWidth: 400, width: '90%', textAlign: 'center',
-            }}>
+          <div className="modal-overlay" onClick={() => setShowCoffee(false)}>
+            <div className="coffee-popup" onClick={e => e.stopPropagation()}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>☕</div>
-              <h2 style={{ color: '#fff', margin: '0 0 8px', fontSize: 22, fontWeight: 800 }}>You closed a winning trade!</h2>
-              <p style={{ color: '#888', margin: '0 0 24px', fontSize: 14, lineHeight: 1.6 }}>
-                Nice profit! If Risk Manager Pro helped you stay disciplined, consider buying me a coffee. ☕
+              <h2>You closed a winning trade! 🎉</h2>
+              <p>
+                If Risk Manager Pro helped you stay disciplined and your trading is in profit,
+                consider buying me a coffee. Best wishes on your journey! 🙏
               </p>
               <a
                 href={planData.status?.donationUrl ?? '#'}
                 target="_blank"
                 rel="noreferrer"
-                style={{ display: 'block', padding: '14px', background: '#FFDD00', borderRadius: 12, color: '#333', fontWeight: 800, fontSize: 15, textDecoration: 'none', marginBottom: 12 }}
+                className="coffee-popup-btn"
               >
                 ☕ Buy Me a Coffee — $5
               </a>
-              <button onClick={() => setShowCoffee(false)} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: 13 }}>
-                Maybe later
-              </button>
+              <button onClick={() => setShowCoffee(false)} className="coffee-popup-dismiss">Maybe later</button>
             </div>
           </div>
         )}
