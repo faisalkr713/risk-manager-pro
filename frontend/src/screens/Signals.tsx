@@ -13,27 +13,51 @@ const Signals: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  const fetchSignals = async (token: string | null) =>
-    fetch(`${API_BASE}/signals`, { headers: { Authorization: `Bearer ${token}` } });
+  const fetchSignals = (token: string | null) =>
+    fetch(`${API_BASE}/signals`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(25000),
+    });
+
+  const attempt = async (): Promise<Resp> => {
+    let res = await fetchSignals(localStorage.getItem('rmp_token'));
+    // Stale/expired token → start a fresh guest session and retry once
+    if (res.status === 401) {
+      const g = await fetch(`${API_BASE}/auth/guest`, { method: 'POST', signal: AbortSignal.timeout(25000) });
+      if (!g.ok) throw new Error(`session ${g.status}`);
+      const gd = await g.json();
+      localStorage.setItem('rmp_token', gd.token);
+      res = await fetchSignals(gd.token);
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  };
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
-    try {
-      let res = await fetchSignals(localStorage.getItem('rmp_token'));
-      // Stale/expired token → start a fresh guest session and retry once
-      if (res.status === 401) {
-        const g = await fetch(`${API_BASE}/auth/guest`, { method: 'POST' });
-        const gd = await g.json();
-        localStorage.setItem('rmp_token', gd.token);
-        res = await fetchSignals(gd.token);
+    // Up to 3 tries with backoff — transparently rides out free-tier cold starts.
+    let lastErr: Error | null = null;
+    for (let i = 0; i < 3; i++) {
+      try {
+        setData(await attempt());
+        setLoading(false);
+        return;
+      } catch (e) {
+        lastErr = e as Error;
+        if (i < 2) {
+          setErr(`Server waking up… retrying (${i + 1}/2)`);
+          await new Promise(r => setTimeout(r, 6000));
+        }
       }
-      if (!res.ok) throw new Error();
-      setData(await res.json());
-    } catch {
-      setErr('Could not load signals. Please tap Refresh.');
-    } finally {
-      setLoading(false);
     }
+    const ex = lastErr as Error;
+    const reason = ex?.name === 'TimeoutError' || ex?.name === 'AbortError'
+      ? 'the server is taking too long to wake up — wait ~30s and tap Refresh'
+      : ex?.message?.startsWith('HTTP') || ex?.message?.startsWith('session')
+        ? `the server returned ${ex.message}`
+        : `network error (${ex?.message || ex?.name || 'request blocked'})`;
+    setErr(`Could not load signals — ${reason}.`);
+    setLoading(false);
   }, []);
 
   useEffect(() => { load(); const t = setInterval(load, 5 * 60 * 1000); return () => clearInterval(t); }, [load]);
