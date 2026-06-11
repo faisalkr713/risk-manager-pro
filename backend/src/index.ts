@@ -48,7 +48,7 @@ if (isProd) {
 
 // Keep the free-tier instance awake by pinging itself before the 15-min idle window.
 function startKeepAlive() {
-  const url = process.env.RENDER_EXTERNAL_URL;
+  const url = process.env.RENDER_EXTERNAL_URL || (isProd ? 'https://risk-manager-pro.onrender.com' : '');
   if (!url) return;
   setInterval(() => {
     fetch(`${url}/api/health`).catch(() => { /* ignore */ });
