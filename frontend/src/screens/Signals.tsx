@@ -8,7 +8,7 @@ interface Signal {
 }
 interface Resp {
   windowStart: number; nextRefresh: number; entryDeadline: number;
-  capital: number; signals: Signal[];
+  marketOpen: boolean; capital: number; signals: Signal[];
 }
 
 const fmt = (ms: number) => {
@@ -72,16 +72,17 @@ const Signals: React.FC = () => {
   // 1-second clock for the countdown
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
-  // Auto-refresh when the 15-min window ends
+  // Auto-refresh when the 15-min window ends (only while the US market is open)
   useEffect(() => {
-    if (data && now >= data.nextRefresh && !loadingRef.current) {
+    if (data?.marketOpen && now >= data.nextRefresh && !loadingRef.current) {
       load();
     }
   }, [now, data, load]);
 
+  const marketOpen = data?.marketOpen ?? true;
   const remaining = data ? data.nextRefresh - now : 0;          // to next signal set
   const entryRemaining = data ? data.entryDeadline - now : 0;   // entry window left
-  const entryOpen = entryRemaining > 0;
+  const entryOpen = marketOpen && entryRemaining > 0;
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
@@ -90,8 +91,23 @@ const Signals: React.FC = () => {
         MACD 35/65/14 + UT Bot on 15-minute candles · auto-updates every 15 min · sized to your capital &amp; targets
       </p>
 
+      {/* Market closed banner */}
+      {data && !marketOpen && (
+        <div style={{
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+          padding: '16px 20px', margin: '16px 0', textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 28, marginBottom: 4 }}>🌙</div>
+          <div style={{ color: 'var(--text)', fontWeight: 800, fontSize: 16 }}>US market is closed</div>
+          <div style={{ color: '#888', fontSize: 12.5, marginTop: 4 }}>
+            AI signals are paused to conserve resources. They resume automatically at market open
+            (Mon–Fri, 9:30 AM ET). Below are the last signals generated.
+          </div>
+        </div>
+      )}
+
       {/* Countdown panel */}
-      {data && (
+      {data && marketOpen && (
         <div style={{
           display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 20px', margin: '16px 0',

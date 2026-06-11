@@ -12,6 +12,18 @@ function currentWindowStart(now = Date.now()): number {
   return Math.floor(now / WINDOW_MS) * WINDOW_MS;
 }
 
+// US stock market regular session: Mon–Fri, 9:30am–4:00pm America/New_York (DST-aware).
+export function isUsMarketOpen(d = new Date()): boolean {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(d);
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? '';
+  const wd = get('weekday');
+  if (wd === 'Sat' || wd === 'Sun') return false;
+  const mins = (parseInt(get('hour')) % 24) * 60 + parseInt(get('minute'));
+  return mins >= 9 * 60 + 30 && mins < 16 * 60;
+}
+
 export interface RawSignal {
   market: string;
   direction: 'BUY' | 'SELL';
@@ -108,23 +120,26 @@ export async function refreshSignals(windowStart: number): Promise<void> {
 }
 
 export async function getSignals(): Promise<{
-  windowStart: number; nextRefresh: number; entryDeadline: number; signals: RawSignal[];
+  windowStart: number; nextRefresh: number; entryDeadline: number; marketOpen: boolean; signals: RawSignal[];
 }> {
+  const marketOpen = isUsMarketOpen();
   const ws = currentWindowStart();
-  if (cache.windowStart !== ws || cache.signals.length === 0) {
+  // Only recompute fresh signals while the US market is open
+  if (marketOpen && (cache.windowStart !== ws || cache.signals.length === 0)) {
     await refreshSignals(ws);
   }
   return {
     windowStart: cache.windowStart,
     nextRefresh: cache.windowStart + WINDOW_MS,
     entryDeadline: cache.windowStart + ENTRY_WINDOW_MS,
+    marketOpen,
     signals: cache.signals,
   };
 }
 
 export function startSignalService(): void {
-  getSignals();
-  // Re-check every 30s so a new aligned window is generated promptly
-  setInterval(() => { getSignals().catch(() => {}); }, 30 * 1000);
-  console.log('AI signal service started (MACD 35/65/14 + UT Bot, 15m, locked per 15-min window)');
+  if (isUsMarketOpen()) getSignals();
+  // Re-check every 30s, but only do work during US market hours
+  setInterval(() => { if (isUsMarketOpen()) getSignals().catch(() => {}); }, 30 * 1000);
+  console.log('AI signal service started (MACD 35/65/14 + UT Bot, 15m, US market hours only)');
 }

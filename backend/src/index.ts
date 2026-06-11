@@ -12,7 +12,7 @@ import analyzeRouter from './routes/analyze';
 import signalsRouter from './routes/signals';
 import { initDb } from './database';
 import { startPriceService } from './services/priceService';
-import { startSignalService } from './services/signalService';
+import { startSignalService, isUsMarketOpen } from './services/signalService';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -50,10 +50,11 @@ if (isProd) {
 function startKeepAlive() {
   const url = process.env.RENDER_EXTERNAL_URL || (isProd ? 'https://risk-manager-pro.onrender.com' : '');
   if (!url) return;
+  // Only keep awake during US market hours — lets the instance sleep off-hours to save free-tier hours.
   setInterval(() => {
-    fetch(`${url}/api/health`).catch(() => { /* ignore */ });
+    if (isUsMarketOpen()) fetch(`${url}/api/health`).catch(() => { /* ignore */ });
   }, 12 * 60 * 1000); // every 12 minutes
-  console.log(`Keep-alive enabled → ${url}/api/health every 12 min`);
+  console.log(`Keep-alive enabled (US market hours only) → ${url}/api/health every 12 min`);
 }
 
 async function start() {

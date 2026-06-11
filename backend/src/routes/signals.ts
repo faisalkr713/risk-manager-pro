@@ -17,7 +17,7 @@ router.get('/', async (req: Request, res: Response) => {
     const dayTarget = parseFloat(s.daily_target) || 200;
     const dayLoss   = parseFloat(s.daily_loss_limit) || 100;
 
-    const { windowStart, nextRefresh, entryDeadline, signals } = await getSignals();
+    const { windowStart, nextRefresh, entryDeadline, marketOpen, signals } = await getSignals();
     const riskPer   = dayLoss / 4;      // risk budget per signal
     const targetPer = dayTarget / 4;    // profit target per signal
     const rr = riskPer > 0 ? targetPer / riskPer : 2;
@@ -45,7 +45,7 @@ router.get('/', async (req: Request, res: Response) => {
       };
     });
 
-    res.json({ generatedAt: windowStart, windowStart, nextRefresh, entryDeadline, capital, signals: out });
+    res.json({ generatedAt: windowStart, windowStart, nextRefresh, entryDeadline, marketOpen, capital, signals: out });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch signals' });
