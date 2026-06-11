@@ -46,13 +46,14 @@ const Signals: React.FC = () => {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true); setErr('');
-    const waits = [3000, 5000, 7000, 9000, 11000];
+    // Long backoff (~70s total) so a free-tier cold start fully completes before we give up.
+    const waits = [2000, 4000, 6000, 8000, 10000, 12000, 14000, 14000];
     let lastErr: Error | null = null;
     for (let i = 0; i < waits.length + 1; i++) {
       try { setData(await attempt()); setLoading(false); loadingRef.current = false; return; }
       catch (e) {
         lastErr = e as Error;
-        if (i < waits.length) { setErr(`Server waking up… retrying (${i + 1}/${waits.length})`); await new Promise(r => setTimeout(r, waits[i])); }
+        if (i < waits.length) { setErr(`Waking up the server… retrying (${i + 1}/${waits.length})`); await new Promise(r => setTimeout(r, waits[i])); }
       }
     }
     const ex = lastErr as Error;
@@ -77,7 +78,7 @@ const Signals: React.FC = () => {
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 4 }}>
         <h1 style={{ color: 'var(--text)', fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: '-0.01em' }}>⚡ Live Signals</h1>
-        <p style={{ color: '#888', fontSize: 12, margin: '4px 0 0' }}>SignalFlow AI · MACD 35/65/14 × UT-Bot · 15-minute candles</p>
+        <p style={{ color: '#888', fontSize: 12, margin: '4px 0 0' }}>TradeCalculate AI · MACD 35/65/14 × UT-Bot · 15-minute candles</p>
       </div>
 
       {/* Market closed */}
@@ -143,7 +144,7 @@ const SignalCard: React.FC<{ s: any; entryOpen: boolean; windowStart: number }> 
             {buy ? 'LONG' : 'SHORT'}
           </span>
         </div>
-        <div style={{ color: '#888', fontSize: 11.5, marginTop: 3 }}>Model: AlphaNet · MACD×UT-Bot</div>
+        <div style={{ color: '#888', fontSize: 11.5, marginTop: 3 }}>Model: TradeCalculate AI</div>
       </div>
 
       <div style={{ padding: '14px 18px 18px' }}>
